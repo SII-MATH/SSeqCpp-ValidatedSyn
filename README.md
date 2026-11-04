@@ -1,3 +1,25 @@
+# SSeqCpp-ValidatedSyn
+
+Experimental fork of [WayneLin92/SSeqCpp](https://github.com/WayneLin92/SSeqCpp), replacing the historical synthetic deductions with checked sufficient-condition rules. The fixed acceptance goal is **201 computation inputs** to the selected Moore proof.
+
+- [Project scope and evidence boundary](docs/validated-syn/README.md)
+- [Fixed 201 targets](validation/targets.json)
+- `SynCs` and `SynCsIn` are disabled; old `GetSynImage` is disabled.
+- The current first implementation covers finite zigzags, selective middle elimination, source finite lifts, and source/target early-d2 corrections. Other sufficient-condition families remain to be implemented if needed. A partial run is never reported as a pass.
+
+Build and start a fresh run:
+
+```sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DFMT_TEST=OFF -DBUILD_TESTING=OFF
+cmake --build build --target ss -j 4
+python3 validation/prepare.py /path/to/original-E2-map-seed .runs/cw49
+python3 validation/run.py .runs/cw49
+```
+
+The data preparation command rejects computed SS states and imports neither historical logs nor computed cofiber tables. The original Adams E2/d2/map data, constructor factors and the three original manual reset inputs are retained initial assumptions. `status.json` reports progress; `acceptance.json` reports actual per-target results. The eight negative targets require fresh contradiction trials. Passing the program does not discharge the formal model and comparison obligations.
+
+---
+
 # SSeqCpp
 This is a cross platform project to compute and manage databases of spectral sequences based. The main programming language is C++. Recently we used this project to solve the Last Kervaire Invariant Problem. See [Zenodo](https://zenodo.org/record/14475507) for detail.
 

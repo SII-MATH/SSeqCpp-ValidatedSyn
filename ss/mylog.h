@@ -37,7 +37,7 @@ enum class EnumReason : uint32_t
 };
 constexpr std::array REASONS = {"manual", "degree",    "degree2",   "deduce",    "deduce2",   "deduce_cs", "deduce_cs2", "cs_in", "cs_out", "nat",     "syn_nat",
                                 "syn_cs", "syn_cs_in", "deduce_xx", "deduce_xy", "deduce_fx", "comm",      "def",       "try",   "try2",   "migrate", "d2"};
-constexpr std::array REASONS_DB = {"M", "G", "GI", "D", "DI", "D", "DI", "ToCs", "OutCsI", "N", "Syn", "SynCs", "SynCsIn", "XX", "XY", "FX", "CsCm", "Def", "T", "TI", "Mg", "d2"};
+constexpr std::array REASONS_DB = {"M", "G", "GI", "D", "DI", "D", "DI", "ToCs", "OutCsI", "N", "SynValidated", "SynCs", "SynCsIn", "XX", "XY", "FX", "CsCm", "Def", "T", "TI", "Mg", "d2"};
 inline const char* INDENT = "          ";
 static_assert(REASONS.size() == REASONS_DB.size());
 

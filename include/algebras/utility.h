@@ -182,7 +182,7 @@ struct map_seq2d
 /* An iterator adapter for 2d data */
 using IJ = std::pair<size_t, size_t>;
 template <typename Cont2d>
-class Iter2d
+class Iter2d : public std::ranges::view_base
 {
 private:
     Cont2d* pData;

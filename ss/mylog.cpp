@@ -36,6 +36,8 @@ void DbLog::InsertExclusion(int id)
 
 void DbLog::InsertDiff(int depth, EnumReason reason, const std::string& name, alg::AdamsDeg deg, int r, const alg::int1d& x, const alg::int1d& dx, const std::string& info)
 {
+    if (reason == EnumReason::synext || reason == EnumReason::synext_p)
+        throw RunTimeError("SynCs/SynCsIn output is forbidden in this fork");
     if (info.empty()) {
         Statement stmt(*this, "INSERT INTO log (depth, reason, name, s, t, r, x, dx) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)");
         stmt.bind_and_step(depth, std::string(GetReasonDb(reason)), name, deg.s, deg.t, r, myio::Serialize(x), myio::Serialize(dx));

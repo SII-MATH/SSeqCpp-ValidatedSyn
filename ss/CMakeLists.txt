@@ -3,7 +3,7 @@ if(MSVC)
 endif()
 
 set(CMAKE_CXX_STANDARD 20)
-add_executable(ss main.h pigroebner.h mylog.h database_ss.cpp add_diff.cpp pigroebner.cpp deduce.cpp ss.cpp category.cpp main.cpp homotopy.cpp loadsave.cpp migrate.cpp mylog.cpp staircase.cpp plot.cpp cofseq.cpp utility.cpp naming.cpp)
+add_executable(ss validated_syn.cpp validated_syn.h validated_verify.cpp main.h pigroebner.h mylog.h database_ss.cpp add_diff.cpp pigroebner.cpp deduce.cpp ss.cpp category.cpp main.cpp homotopy.cpp loadsave.cpp migrate.cpp mylog.cpp staircase.cpp plot.cpp cofseq.cpp utility.cpp naming.cpp)
 target_compile_features(ss PRIVATE cxx_std_20)
 target_include_directories(ss PRIVATE ../include ../thirdparty/nlohmann_json ../thirdparty/fmt)
 target_link_libraries(ss PRIVATE algebras fmt)

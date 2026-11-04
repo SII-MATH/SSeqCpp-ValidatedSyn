@@ -4,6 +4,7 @@
 #include "mylog.h"
 #include <iostream>
 
+int main_verify_validated(int, char**, int&, const char*);
 int main_reset(int, char**, int&, const char*);
 int main_reset_cofseq(int, char**, int&, const char*);
 int main_reset_pi(int, char**, int&, const char*);
@@ -39,6 +40,7 @@ int main(int argc, char** argv)
 
     bench::Timer timer;
     myio::SubCmdArg1d subcmds = {
+        {"verify", "Check the fixed acceptance collection", main_verify_validated},
         {"reset", "Initialize the category", main_reset},
         {"reset_cofseq", "Initialize the cofseq tables", main_reset_cofseq},
         //{"reset_pi", "Initialize the homotopy tables", main_reset_pi},

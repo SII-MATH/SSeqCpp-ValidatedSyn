@@ -1,0 +1,3603 @@
+{
+  "schema_version": 1,
+  "count": 201,
+  "root": "KIP126.Main.h6_sq_permanent",
+  "source_commit": "2532b3c8",
+  "source_audit_sha256": "5e774420c950175714752310bdb9395f4bf343bd08cff0abae710c4176993847",
+  "scope": "194 SS coordinate claims, 2 named Moore equations, 3 direct d2 inputs, 2 staircase inputs. Targets are read only by the verifier, never the deduction engine.",
+  "targets": [
+    {
+      "collection": "named",
+      "name": "mooreBottomD4",
+      "object": "C2",
+      "kind": "equation",
+      "r": 4,
+      "s": 8,
+      "t": 132,
+      "x": [
+        0
+      ],
+      "ts": 12,
+      "tt": 135,
+      "y": [],
+      "id": "T001"
+    },
+    {
+      "y": [
+        3
+      ],
+      "x": [
+        1
+      ],
+      "tt": 135,
+      "ts": 9,
+      "t": 134,
+      "spectrum": "nuCofiber",
+      "s": 7,
+      "r": 2,
+      "kind": "equation",
+      "object": "Cnu",
+      "collection": "table",
+      "id": "T002"
+    },
+    {
+      "y": [
+        4
+      ],
+      "x": [
+        3
+      ],
+      "tt": 135,
+      "ts": 9,
+      "t": 134,
+      "spectrum": "nuCofiber",
+      "s": 7,
+      "r": 2,
+      "kind": "equation",
+      "object": "Cnu",
+      "collection": "table",
+      "id": "T003"
+    },
+    {
+      "y": [
+        3
+      ],
+      "x": [
+        0,
+        3,
+        4
+      ],
+      "tt": 136,
+      "ts": 11,
+      "t": 134,
+      "spectrum": "nuCofiber",
+      "s": 8,
+      "r": 3,
+      "kind": "equation",
+      "object": "Cnu",
+      "collection": "table",
+      "id": "T004"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        2
+      ],
+      "tt": 136,
+      "ts": 10,
+      "t": 135,
+      "spectrum": "nuCofiber",
+      "s": 8,
+      "r": 2,
+      "kind": "equation",
+      "object": "Cnu",
+      "collection": "table",
+      "id": "T005"
+    },
+    {
+      "y": [
+        2
+      ],
+      "x": [
+        3
+      ],
+      "tt": 136,
+      "ts": 10,
+      "t": 135,
+      "spectrum": "nuCofiber",
+      "s": 8,
+      "r": 2,
+      "kind": "equation",
+      "object": "Cnu",
+      "collection": "table",
+      "id": "T006"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        0
+      ],
+      "tt": 137,
+      "ts": 11,
+      "t": 135,
+      "spectrum": "nuCofiber",
+      "s": 8,
+      "r": 3,
+      "kind": "equation",
+      "object": "Cnu",
+      "collection": "table",
+      "id": "T007"
+    },
+    {
+      "y": [
+        4
+      ],
+      "x": [
+        0
+      ],
+      "tt": 137,
+      "ts": 12,
+      "t": 135,
+      "spectrum": "nuCofiber",
+      "s": 9,
+      "r": 3,
+      "kind": "equation",
+      "object": "Cnu",
+      "collection": "table",
+      "id": "T008"
+    },
+    {
+      "y": [
+        3
+      ],
+      "x": [
+        2
+      ],
+      "tt": 138,
+      "ts": 13,
+      "t": 135,
+      "spectrum": "nuCofiber",
+      "s": 9,
+      "r": 4,
+      "kind": "equation",
+      "object": "Cnu",
+      "collection": "table",
+      "id": "T009"
+    },
+    {
+      "y": [],
+      "x": [
+        1
+      ],
+      "tt": 135,
+      "ts": 9,
+      "t": 135,
+      "spectrum": "nuCofiber",
+      "s": 9,
+      "r": 16,
+      "kind": "reaches",
+      "object": "Cnu",
+      "collection": "table",
+      "id": "T010"
+    },
+    {
+      "y": [
+        3
+      ],
+      "x": [
+        3
+      ],
+      "tt": 137,
+      "ts": 11,
+      "t": 136,
+      "spectrum": "nuCofiber",
+      "s": 9,
+      "r": 2,
+      "kind": "equation",
+      "object": "Cnu",
+      "collection": "table",
+      "id": "T011"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        0
+      ],
+      "tt": 138,
+      "ts": 13,
+      "t": 136,
+      "spectrum": "nuCofiber",
+      "s": 10,
+      "r": 3,
+      "kind": "equation",
+      "object": "Cnu",
+      "collection": "table",
+      "id": "T012"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        1
+      ],
+      "tt": 138,
+      "ts": 12,
+      "t": 137,
+      "spectrum": "nuCofiber",
+      "s": 10,
+      "r": 2,
+      "kind": "equation",
+      "object": "Cnu",
+      "collection": "table",
+      "id": "T013"
+    },
+    {
+      "y": [
+        3
+      ],
+      "x": [
+        4
+      ],
+      "tt": 138,
+      "ts": 12,
+      "t": 137,
+      "spectrum": "nuCofiber",
+      "s": 10,
+      "r": 2,
+      "kind": "equation",
+      "object": "Cnu",
+      "collection": "table",
+      "id": "T014"
+    },
+    {
+      "y": [],
+      "x": [
+        2
+      ],
+      "tt": 137,
+      "ts": 11,
+      "t": 137,
+      "spectrum": "nuCofiber",
+      "s": 11,
+      "r": 14,
+      "kind": "reaches",
+      "object": "Cnu",
+      "collection": "table",
+      "id": "T015"
+    },
+    {
+      "y": [],
+      "x": [
+        1,
+        2
+      ],
+      "tt": 137,
+      "ts": 11,
+      "t": 137,
+      "spectrum": "nuCofiber",
+      "s": 11,
+      "r": 1000,
+      "kind": "reaches",
+      "object": "Cnu",
+      "collection": "table",
+      "id": "T016"
+    },
+    {
+      "y": [
+        3
+      ],
+      "x": [
+        2
+      ],
+      "tt": 139,
+      "ts": 14,
+      "t": 138,
+      "spectrum": "nuCofiber",
+      "s": 12,
+      "r": 2,
+      "kind": "equation",
+      "object": "Cnu",
+      "collection": "table",
+      "id": "T017"
+    },
+    {
+      "y": [
+        2
+      ],
+      "x": [
+        0
+      ],
+      "tt": 140,
+      "ts": 15,
+      "t": 138,
+      "spectrum": "nuCofiber",
+      "s": 12,
+      "r": 3,
+      "kind": "equation",
+      "object": "Cnu",
+      "collection": "table",
+      "id": "T018"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        0
+      ],
+      "tt": 65,
+      "ts": 3,
+      "t": 64,
+      "spectrum": "sphere",
+      "s": 1,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T019"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        0
+      ],
+      "tt": 129,
+      "ts": 3,
+      "t": 128,
+      "spectrum": "sphere",
+      "s": 1,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T020"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        0
+      ],
+      "tt": 66,
+      "ts": 4,
+      "t": 65,
+      "spectrum": "sphere",
+      "s": 2,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T021"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        0
+      ],
+      "tt": 130,
+      "ts": 4,
+      "t": 129,
+      "spectrum": "sphere",
+      "s": 2,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T022"
+    },
+    {
+      "y": [
+        2
+      ],
+      "x": [
+        1
+      ],
+      "tt": 67,
+      "ts": 5,
+      "t": 66,
+      "spectrum": "sphere",
+      "s": 3,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T023"
+    },
+    {
+      "y": [],
+      "x": [
+        0
+      ],
+      "tt": 66,
+      "ts": 3,
+      "t": 66,
+      "spectrum": "sphere",
+      "s": 3,
+      "r": 1000,
+      "kind": "reaches",
+      "object": "S0",
+      "collection": "table",
+      "id": "T024"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        1
+      ],
+      "tt": 131,
+      "ts": 5,
+      "t": 130,
+      "spectrum": "sphere",
+      "s": 3,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T025"
+    },
+    {
+      "y": [],
+      "x": [
+        0
+      ],
+      "tt": 130,
+      "ts": 3,
+      "t": 130,
+      "spectrum": "sphere",
+      "s": 3,
+      "r": 14,
+      "kind": "reaches",
+      "object": "S0",
+      "collection": "table",
+      "id": "T026"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        0
+      ],
+      "tt": 68,
+      "ts": 6,
+      "t": 67,
+      "spectrum": "sphere",
+      "s": 4,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T027"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        0
+      ],
+      "tt": 132,
+      "ts": 7,
+      "t": 130,
+      "spectrum": "sphere",
+      "s": 4,
+      "r": 3,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T028"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        0
+      ],
+      "tt": 132,
+      "ts": 6,
+      "t": 131,
+      "spectrum": "sphere",
+      "s": 4,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T029"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        0
+      ],
+      "tt": 69,
+      "ts": 7,
+      "t": 68,
+      "spectrum": "sphere",
+      "s": 5,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T030"
+    },
+    {
+      "y": [
+        2
+      ],
+      "x": [
+        0
+      ],
+      "tt": 131,
+      "ts": 7,
+      "t": 130,
+      "spectrum": "sphere",
+      "s": 5,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T031"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        0
+      ],
+      "tt": 133,
+      "ts": 7,
+      "t": 132,
+      "spectrum": "sphere",
+      "s": 5,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T032"
+    },
+    {
+      "y": [
+        2
+      ],
+      "x": [
+        1
+      ],
+      "tt": 70,
+      "ts": 8,
+      "t": 69,
+      "spectrum": "sphere",
+      "s": 6,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T033"
+    },
+    {
+      "y": [],
+      "x": [
+        0
+      ],
+      "tt": 69,
+      "ts": 6,
+      "t": 69,
+      "spectrum": "sphere",
+      "s": 6,
+      "r": 1000,
+      "kind": "reaches",
+      "object": "S0",
+      "collection": "table",
+      "id": "T034"
+    },
+    {
+      "y": [
+        2
+      ],
+      "x": [
+        0
+      ],
+      "tt": 134,
+      "ts": 11,
+      "t": 130,
+      "spectrum": "sphere",
+      "s": 6,
+      "r": 5,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T035"
+    },
+    {
+      "y": [
+        0,
+        3
+      ],
+      "x": [
+        0
+      ],
+      "tt": 134,
+      "ts": 10,
+      "t": 131,
+      "spectrum": "sphere",
+      "s": 6,
+      "r": 4,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T036"
+    },
+    {
+      "y": [
+        0,
+        1,
+        3,
+        4
+      ],
+      "x": [
+        1
+      ],
+      "tt": 134,
+      "ts": 10,
+      "t": 131,
+      "spectrum": "sphere",
+      "s": 6,
+      "r": 4,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T037"
+    },
+    {
+      "y": [],
+      "x": [
+        0
+      ],
+      "tt": 132,
+      "ts": 6,
+      "t": 132,
+      "spectrum": "sphere",
+      "s": 6,
+      "r": 3,
+      "kind": "reaches",
+      "object": "S0",
+      "collection": "table",
+      "id": "T038"
+    },
+    {
+      "y": [],
+      "x": [
+        0
+      ],
+      "tt": 134,
+      "ts": 9,
+      "t": 132,
+      "spectrum": "sphere",
+      "s": 6,
+      "r": 3,
+      "kind": "refutation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T039"
+    },
+    {
+      "y": [
+        2
+      ],
+      "x": [
+        0
+      ],
+      "tt": 134,
+      "ts": 9,
+      "t": 132,
+      "spectrum": "sphere",
+      "s": 6,
+      "r": 3,
+      "kind": "refutation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T040"
+    },
+    {
+      "y": [
+        5
+      ],
+      "x": [
+        1
+      ],
+      "tt": 134,
+      "ts": 8,
+      "t": 133,
+      "spectrum": "sphere",
+      "s": 6,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T041"
+    },
+    {
+      "y": [],
+      "x": [
+        0
+      ],
+      "tt": 133,
+      "ts": 6,
+      "t": 133,
+      "spectrum": "sphere",
+      "s": 6,
+      "r": 4,
+      "kind": "reaches",
+      "object": "S0",
+      "collection": "table",
+      "id": "T042"
+    },
+    {
+      "y": [
+        0,
+        1
+      ],
+      "x": [
+        0
+      ],
+      "tt": 133,
+      "ts": 10,
+      "t": 131,
+      "spectrum": "sphere",
+      "s": 7,
+      "r": 3,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T043"
+    },
+    {
+      "y": [
+        2
+      ],
+      "x": [
+        1
+      ],
+      "tt": 135,
+      "ts": 12,
+      "t": 131,
+      "spectrum": "sphere",
+      "s": 7,
+      "r": 5,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T044"
+    },
+    {
+      "y": [],
+      "x": [
+        0
+      ],
+      "tt": 133,
+      "ts": 7,
+      "t": 133,
+      "spectrum": "sphere",
+      "s": 7,
+      "r": 18,
+      "kind": "reaches",
+      "object": "S0",
+      "collection": "table",
+      "id": "T045"
+    },
+    {
+      "y": [
+        4
+      ],
+      "x": [
+        1
+      ],
+      "tt": 135,
+      "ts": 9,
+      "t": 134,
+      "spectrum": "sphere",
+      "s": 7,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T046"
+    },
+    {
+      "y": [
+        5
+      ],
+      "x": [
+        4
+      ],
+      "tt": 135,
+      "ts": 9,
+      "t": 134,
+      "spectrum": "sphere",
+      "s": 7,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T047"
+    },
+    {
+      "y": [],
+      "x": [
+        1
+      ],
+      "tt": 70,
+      "ts": 8,
+      "t": 70,
+      "spectrum": "sphere",
+      "s": 8,
+      "r": 1000,
+      "kind": "reaches",
+      "object": "S0",
+      "collection": "table",
+      "id": "T048"
+    },
+    {
+      "y": [],
+      "x": [
+        0
+      ],
+      "tt": 130,
+      "ts": 8,
+      "t": 130,
+      "spectrum": "sphere",
+      "s": 8,
+      "r": 6,
+      "kind": "reaches",
+      "object": "S0",
+      "collection": "table",
+      "id": "T049"
+    },
+    {
+      "y": [
+        0,
+        1
+      ],
+      "x": [
+        0
+      ],
+      "tt": 133,
+      "ts": 11,
+      "t": 131,
+      "spectrum": "sphere",
+      "s": 8,
+      "r": 3,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T050"
+    },
+    {
+      "y": [
+        2
+      ],
+      "x": [
+        0
+      ],
+      "tt": 133,
+      "ts": 10,
+      "t": 132,
+      "spectrum": "sphere",
+      "s": 8,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T051"
+    },
+    {
+      "y": [
+        2,
+        4
+      ],
+      "x": [
+        1
+      ],
+      "tt": 134,
+      "ts": 10,
+      "t": 133,
+      "spectrum": "sphere",
+      "s": 8,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T052"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        0
+      ],
+      "tt": 135,
+      "ts": 11,
+      "t": 133,
+      "spectrum": "sphere",
+      "s": 8,
+      "r": 3,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T053"
+    },
+    {
+      "y": [
+        3
+      ],
+      "x": [
+        1
+      ],
+      "tt": 135,
+      "ts": 10,
+      "t": 134,
+      "spectrum": "sphere",
+      "s": 8,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T054"
+    },
+    {
+      "y": [
+        2
+      ],
+      "x": [
+        2
+      ],
+      "tt": 136,
+      "ts": 11,
+      "t": 134,
+      "spectrum": "sphere",
+      "s": 8,
+      "r": 3,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T055"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        3
+      ],
+      "tt": 136,
+      "ts": 11,
+      "t": 134,
+      "spectrum": "sphere",
+      "s": 8,
+      "r": 3,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T056"
+    },
+    {
+      "y": [],
+      "x": [
+        0,
+        3
+      ],
+      "tt": 134,
+      "ts": 8,
+      "t": 134,
+      "spectrum": "sphere",
+      "s": 8,
+      "r": 6,
+      "kind": "reaches",
+      "object": "S0",
+      "collection": "table",
+      "id": "T057"
+    },
+    {
+      "y": [],
+      "x": [
+        4
+      ],
+      "tt": 134,
+      "ts": 8,
+      "t": 134,
+      "spectrum": "sphere",
+      "s": 8,
+      "r": 17,
+      "kind": "reaches",
+      "object": "S0",
+      "collection": "table",
+      "id": "T058"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        0
+      ],
+      "tt": 136,
+      "ts": 10,
+      "t": 135,
+      "spectrum": "sphere",
+      "s": 8,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T059"
+    },
+    {
+      "y": [
+        3
+      ],
+      "x": [
+        4
+      ],
+      "tt": 136,
+      "ts": 10,
+      "t": 135,
+      "spectrum": "sphere",
+      "s": 8,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T060"
+    },
+    {
+      "y": [
+        4
+      ],
+      "x": [
+        6
+      ],
+      "tt": 136,
+      "ts": 10,
+      "t": 135,
+      "spectrum": "sphere",
+      "s": 8,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T061"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        0
+      ],
+      "tt": 134,
+      "ts": 12,
+      "t": 132,
+      "spectrum": "sphere",
+      "s": 9,
+      "r": 3,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T062"
+    },
+    {
+      "y": [
+        1,
+        2
+      ],
+      "x": [
+        1
+      ],
+      "tt": 134,
+      "ts": 12,
+      "t": 132,
+      "spectrum": "sphere",
+      "s": 9,
+      "r": 3,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T063"
+    },
+    {
+      "collection": "named",
+      "name": "sphereVD7",
+      "object": "S0",
+      "kind": "equation",
+      "r": 7,
+      "s": 9,
+      "t": 132,
+      "x": [
+        0,
+        1
+      ],
+      "ts": 16,
+      "tt": 138,
+      "y": [],
+      "id": "T064"
+    },
+    {
+      "y": [
+        4
+      ],
+      "x": [
+        2
+      ],
+      "tt": 134,
+      "ts": 11,
+      "t": 133,
+      "spectrum": "sphere",
+      "s": 9,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T065"
+    },
+    {
+      "y": [
+        1,
+        2
+      ],
+      "x": [
+        0,
+        2
+      ],
+      "tt": 135,
+      "ts": 12,
+      "t": 133,
+      "spectrum": "sphere",
+      "s": 9,
+      "r": 3,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T066"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        1,
+        2
+      ],
+      "tt": 135,
+      "ts": 12,
+      "t": 133,
+      "spectrum": "sphere",
+      "s": 9,
+      "r": 3,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T067"
+    },
+    {
+      "y": [
+        3,
+        4
+      ],
+      "x": [
+        0
+      ],
+      "tt": 135,
+      "ts": 11,
+      "t": 134,
+      "spectrum": "sphere",
+      "s": 9,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T068"
+    },
+    {
+      "y": [
+        4
+      ],
+      "x": [
+        4
+      ],
+      "tt": 135,
+      "ts": 11,
+      "t": 134,
+      "spectrum": "sphere",
+      "s": 9,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T069"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        1
+      ],
+      "tt": 136,
+      "ts": 12,
+      "t": 134,
+      "spectrum": "sphere",
+      "s": 9,
+      "r": 3,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T070"
+    },
+    {
+      "y": [],
+      "x": [
+        3
+      ],
+      "tt": 134,
+      "ts": 9,
+      "t": 134,
+      "spectrum": "sphere",
+      "s": 9,
+      "r": 7,
+      "kind": "reaches",
+      "object": "S0",
+      "collection": "table",
+      "id": "T071"
+    },
+    {
+      "y": [],
+      "x": [
+        2
+      ],
+      "tt": 134,
+      "ts": 9,
+      "t": 134,
+      "spectrum": "sphere",
+      "s": 9,
+      "r": 1000,
+      "kind": "reaches",
+      "object": "S0",
+      "collection": "table",
+      "id": "T072"
+    },
+    {
+      "y": [
+        3,
+        4
+      ],
+      "x": [
+        0
+      ],
+      "tt": 137,
+      "ts": 12,
+      "t": 135,
+      "spectrum": "sphere",
+      "s": 9,
+      "r": 3,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T073"
+    },
+    {
+      "y": [
+        4
+      ],
+      "x": [
+        0,
+        3
+      ],
+      "tt": 137,
+      "ts": 12,
+      "t": 135,
+      "spectrum": "sphere",
+      "s": 9,
+      "r": 3,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T074"
+    },
+    {
+      "y": [
+        3
+      ],
+      "x": [
+        3
+      ],
+      "tt": 137,
+      "ts": 12,
+      "t": 135,
+      "spectrum": "sphere",
+      "s": 9,
+      "r": 3,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T075"
+    },
+    {
+      "y": [
+        2
+      ],
+      "x": [
+        1
+      ],
+      "tt": 138,
+      "ts": 13,
+      "t": 135,
+      "spectrum": "sphere",
+      "s": 9,
+      "r": 4,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T076"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        2
+      ],
+      "tt": 138,
+      "ts": 13,
+      "t": 135,
+      "spectrum": "sphere",
+      "s": 9,
+      "r": 4,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T077"
+    },
+    {
+      "y": [
+        4
+      ],
+      "x": [
+        2
+      ],
+      "tt": 137,
+      "ts": 11,
+      "t": 136,
+      "spectrum": "sphere",
+      "s": 9,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T078"
+    },
+    {
+      "y": [
+        5
+      ],
+      "x": [
+        4
+      ],
+      "tt": 137,
+      "ts": 11,
+      "t": 136,
+      "spectrum": "sphere",
+      "s": 9,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T079"
+    },
+    {
+      "y": [
+        2
+      ],
+      "x": [
+        0
+      ],
+      "tt": 134,
+      "ts": 12,
+      "t": 133,
+      "spectrum": "sphere",
+      "s": 10,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T080"
+    },
+    {
+      "y": [
+        2
+      ],
+      "x": [
+        1
+      ],
+      "tt": 134,
+      "ts": 12,
+      "t": 133,
+      "spectrum": "sphere",
+      "s": 10,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T081"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        3
+      ],
+      "tt": 138,
+      "ts": 15,
+      "t": 134,
+      "spectrum": "sphere",
+      "s": 10,
+      "r": 5,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T082"
+    },
+    {
+      "y": [],
+      "x": [
+        4
+      ],
+      "tt": 134,
+      "ts": 10,
+      "t": 134,
+      "spectrum": "sphere",
+      "s": 10,
+      "r": 1000,
+      "kind": "reaches",
+      "object": "S0",
+      "collection": "table",
+      "id": "T083"
+    },
+    {
+      "y": [
+        1,
+        2
+      ],
+      "x": [
+        1
+      ],
+      "tt": 136,
+      "ts": 12,
+      "t": 135,
+      "spectrum": "sphere",
+      "s": 10,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T084"
+    },
+    {
+      "y": [
+        3,
+        4
+      ],
+      "x": [
+        2
+      ],
+      "tt": 136,
+      "ts": 12,
+      "t": 135,
+      "spectrum": "sphere",
+      "s": 10,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T085"
+    },
+    {
+      "y": [
+        4
+      ],
+      "x": [
+        4
+      ],
+      "tt": 136,
+      "ts": 12,
+      "t": 135,
+      "spectrum": "sphere",
+      "s": 10,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T086"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        0
+      ],
+      "tt": 137,
+      "ts": 13,
+      "t": 135,
+      "spectrum": "sphere",
+      "s": 10,
+      "r": 3,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T087"
+    },
+    {
+      "y": [
+        2
+      ],
+      "x": [
+        0
+      ],
+      "tt": 137,
+      "ts": 12,
+      "t": 136,
+      "spectrum": "sphere",
+      "s": 10,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "direct-d2",
+      "id": "T088"
+    },
+    {
+      "y": [],
+      "x": [
+        2
+      ],
+      "tt": 136,
+      "ts": 10,
+      "t": 136,
+      "spectrum": "sphere",
+      "s": 10,
+      "r": 1000,
+      "kind": "reaches",
+      "object": "S0",
+      "collection": "table",
+      "id": "T089"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        0
+      ],
+      "tt": 138,
+      "ts": 12,
+      "t": 137,
+      "spectrum": "sphere",
+      "s": 10,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T090"
+    },
+    {
+      "y": [
+        2
+      ],
+      "x": [
+        1
+      ],
+      "tt": 138,
+      "ts": 12,
+      "t": 137,
+      "spectrum": "sphere",
+      "s": 10,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T091"
+    },
+    {
+      "y": [
+        4
+      ],
+      "x": [
+        5
+      ],
+      "tt": 138,
+      "ts": 12,
+      "t": 137,
+      "spectrum": "sphere",
+      "s": 10,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T092"
+    },
+    {
+      "y": [],
+      "x": [
+        1
+      ],
+      "tt": 133,
+      "ts": 11,
+      "t": 133,
+      "spectrum": "sphere",
+      "s": 11,
+      "r": 1000,
+      "kind": "reaches",
+      "object": "S0",
+      "collection": "table",
+      "id": "T093"
+    },
+    {
+      "y": [
+        2
+      ],
+      "x": [
+        2
+      ],
+      "tt": 136,
+      "ts": 13,
+      "t": 135,
+      "spectrum": "sphere",
+      "s": 11,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T094"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        1,
+        2
+      ],
+      "tt": 138,
+      "ts": 15,
+      "t": 135,
+      "spectrum": "sphere",
+      "s": 11,
+      "r": 4,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T095"
+    },
+    {
+      "y": [
+        3
+      ],
+      "x": [
+        4
+      ],
+      "tt": 137,
+      "ts": 13,
+      "t": 136,
+      "spectrum": "sphere",
+      "s": 11,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T096"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        0
+      ],
+      "tt": 139,
+      "ts": 15,
+      "t": 136,
+      "spectrum": "sphere",
+      "s": 11,
+      "r": 4,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T097"
+    },
+    {
+      "y": [],
+      "x": [
+        3
+      ],
+      "tt": 136,
+      "ts": 11,
+      "t": 136,
+      "spectrum": "sphere",
+      "s": 11,
+      "r": 5,
+      "kind": "reaches",
+      "object": "S0",
+      "collection": "table",
+      "id": "T098"
+    },
+    {
+      "y": [
+        3
+      ],
+      "x": [
+        0
+      ],
+      "tt": 138,
+      "ts": 13,
+      "t": 137,
+      "spectrum": "sphere",
+      "s": 11,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "direct-d2",
+      "id": "T099"
+    },
+    {
+      "y": [
+        4
+      ],
+      "x": [
+        3
+      ],
+      "tt": 138,
+      "ts": 13,
+      "t": 137,
+      "spectrum": "sphere",
+      "s": 11,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "direct-d2",
+      "id": "T100"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        2
+      ],
+      "tt": 140,
+      "ts": 15,
+      "t": 137,
+      "spectrum": "sphere",
+      "s": 11,
+      "r": 4,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T101"
+    },
+    {
+      "y": [],
+      "x": [
+        1,
+        2
+      ],
+      "tt": 137,
+      "ts": 11,
+      "t": 137,
+      "spectrum": "sphere",
+      "s": 11,
+      "r": 1000,
+      "kind": "reaches",
+      "object": "S0",
+      "collection": "table",
+      "id": "T102"
+    },
+    {
+      "y": [],
+      "x": [
+        0
+      ],
+      "tt": 134,
+      "ts": 12,
+      "t": 134,
+      "spectrum": "sphere",
+      "s": 12,
+      "r": 1000,
+      "kind": "reaches",
+      "object": "S0",
+      "collection": "table",
+      "id": "T103"
+    },
+    {
+      "y": [
+        2
+      ],
+      "x": [
+        2
+      ],
+      "tt": 137,
+      "ts": 14,
+      "t": 136,
+      "spectrum": "sphere",
+      "s": 12,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T104"
+    },
+    {
+      "y": [
+        3
+      ],
+      "x": [
+        0
+      ],
+      "tt": 138,
+      "ts": 14,
+      "t": 137,
+      "spectrum": "sphere",
+      "s": 12,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T105"
+    },
+    {
+      "y": [
+        4
+      ],
+      "x": [
+        1
+      ],
+      "tt": 138,
+      "ts": 14,
+      "t": 137,
+      "spectrum": "sphere",
+      "s": 12,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T106"
+    },
+    {
+      "y": [
+        2
+      ],
+      "x": [
+        1
+      ],
+      "tt": 139,
+      "ts": 14,
+      "t": 138,
+      "spectrum": "sphere",
+      "s": 12,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T107"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        3
+      ],
+      "tt": 141,
+      "ts": 16,
+      "t": 138,
+      "spectrum": "sphere",
+      "s": 12,
+      "r": 4,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T108"
+    },
+    {
+      "y": [
+        0,
+        2
+      ],
+      "x": [
+        0
+      ],
+      "tt": 138,
+      "ts": 16,
+      "t": 136,
+      "spectrum": "sphere",
+      "s": 13,
+      "r": 3,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T109"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        1
+      ],
+      "tt": 138,
+      "ts": 16,
+      "t": 136,
+      "spectrum": "sphere",
+      "s": 13,
+      "r": 3,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T110"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        2
+      ],
+      "tt": 139,
+      "ts": 16,
+      "t": 137,
+      "spectrum": "sphere",
+      "s": 13,
+      "r": 3,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T111"
+    },
+    {
+      "y": [],
+      "x": [
+        1
+      ],
+      "tt": 137,
+      "ts": 13,
+      "t": 137,
+      "spectrum": "sphere",
+      "s": 13,
+      "r": 1000,
+      "kind": "reaches",
+      "object": "S0",
+      "collection": "table",
+      "id": "T112"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        1
+      ],
+      "tt": 140,
+      "ts": 16,
+      "t": 138,
+      "spectrum": "sphere",
+      "s": 13,
+      "r": 3,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T113"
+    },
+    {
+      "y": [
+        4
+      ],
+      "x": [
+        1
+      ],
+      "tt": 140,
+      "ts": 15,
+      "t": 139,
+      "spectrum": "sphere",
+      "s": 13,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T114"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        0
+      ],
+      "tt": 143,
+      "ts": 18,
+      "t": 139,
+      "spectrum": "sphere",
+      "s": 13,
+      "r": 5,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T115"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        0
+      ],
+      "tt": 139,
+      "ts": 17,
+      "t": 137,
+      "spectrum": "sphere",
+      "s": 14,
+      "r": 3,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T116"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        1
+      ],
+      "tt": 139,
+      "ts": 17,
+      "t": 137,
+      "spectrum": "sphere",
+      "s": 14,
+      "r": 3,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T117"
+    },
+    {
+      "y": [
+        2
+      ],
+      "x": [
+        0,
+        1
+      ],
+      "tt": 139,
+      "ts": 16,
+      "t": 138,
+      "spectrum": "sphere",
+      "s": 14,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T118"
+    },
+    {
+      "y": [
+        1,
+        2
+      ],
+      "x": [
+        1
+      ],
+      "tt": 139,
+      "ts": 16,
+      "t": 138,
+      "spectrum": "sphere",
+      "s": 14,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T119"
+    },
+    {
+      "y": [],
+      "x": [
+        2
+      ],
+      "tt": 138,
+      "ts": 14,
+      "t": 138,
+      "spectrum": "sphere",
+      "s": 14,
+      "r": 1000,
+      "kind": "reaches",
+      "object": "S0",
+      "collection": "staircase",
+      "id": "T120"
+    },
+    {
+      "y": [
+        2
+      ],
+      "x": [
+        0
+      ],
+      "tt": 140,
+      "ts": 16,
+      "t": 139,
+      "spectrum": "sphere",
+      "s": 14,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T121"
+    },
+    {
+      "y": [],
+      "x": [
+        1
+      ],
+      "tt": 139,
+      "ts": 14,
+      "t": 139,
+      "spectrum": "sphere",
+      "s": 14,
+      "r": 1000,
+      "kind": "reaches",
+      "object": "S0",
+      "collection": "table",
+      "id": "T122"
+    },
+    {
+      "y": [
+        2
+      ],
+      "x": [
+        1
+      ],
+      "tt": 141,
+      "ts": 16,
+      "t": 140,
+      "spectrum": "sphere",
+      "s": 14,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T123"
+    },
+    {
+      "y": [
+        2
+      ],
+      "x": [
+        2
+      ],
+      "tt": 140,
+      "ts": 18,
+      "t": 138,
+      "spectrum": "sphere",
+      "s": 15,
+      "r": 3,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T124"
+    },
+    {
+      "y": [
+        3
+      ],
+      "x": [
+        2,
+        3
+      ],
+      "tt": 140,
+      "ts": 17,
+      "t": 139,
+      "spectrum": "sphere",
+      "s": 15,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T125"
+    },
+    {
+      "y": [
+        2,
+        3
+      ],
+      "x": [
+        3
+      ],
+      "tt": 140,
+      "ts": 17,
+      "t": 139,
+      "spectrum": "sphere",
+      "s": 15,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T126"
+    },
+    {
+      "y": [],
+      "x": [
+        1,
+        3
+      ],
+      "tt": 139,
+      "ts": 15,
+      "t": 139,
+      "spectrum": "sphere",
+      "s": 15,
+      "r": 1000,
+      "kind": "reaches",
+      "object": "S0",
+      "collection": "staircase",
+      "id": "T127"
+    },
+    {
+      "y": [
+        3
+      ],
+      "x": [
+        0
+      ],
+      "tt": 141,
+      "ts": 17,
+      "t": 140,
+      "spectrum": "sphere",
+      "s": 15,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T128"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        3
+      ],
+      "tt": 141,
+      "ts": 17,
+      "t": 140,
+      "spectrum": "sphere",
+      "s": 15,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T129"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        2
+      ],
+      "tt": 144,
+      "ts": 20,
+      "t": 140,
+      "spectrum": "sphere",
+      "s": 15,
+      "r": 5,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T130"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        0
+      ],
+      "tt": 142,
+      "ts": 17,
+      "t": 141,
+      "spectrum": "sphere",
+      "s": 15,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T131"
+    },
+    {
+      "y": [
+        0,
+        1
+      ],
+      "x": [
+        0
+      ],
+      "tt": 142,
+      "ts": 18,
+      "t": 141,
+      "spectrum": "sphere",
+      "s": 16,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T132"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        3
+      ],
+      "tt": 142,
+      "ts": 18,
+      "t": 141,
+      "spectrum": "sphere",
+      "s": 16,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T133"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        1
+      ],
+      "tt": 143,
+      "ts": 19,
+      "t": 142,
+      "spectrum": "sphere",
+      "s": 17,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T134"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        1
+      ],
+      "tt": 146,
+      "ts": 21,
+      "t": 143,
+      "spectrum": "sphere",
+      "s": 17,
+      "r": 4,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T135"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        1
+      ],
+      "tt": 144,
+      "ts": 20,
+      "t": 143,
+      "spectrum": "sphere",
+      "s": 18,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T136"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        0
+      ],
+      "tt": 145,
+      "ts": 20,
+      "t": 144,
+      "spectrum": "sphere",
+      "s": 18,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T137"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        1
+      ],
+      "tt": 147,
+      "ts": 22,
+      "t": 144,
+      "spectrum": "sphere",
+      "s": 18,
+      "r": 4,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T138"
+    },
+    {
+      "y": [
+        0,
+        3
+      ],
+      "x": [
+        2,
+        3
+      ],
+      "tt": 147,
+      "ts": 22,
+      "t": 144,
+      "spectrum": "sphere",
+      "s": 18,
+      "r": 4,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T139"
+    },
+    {
+      "y": [
+        2
+      ],
+      "x": [
+        4
+      ],
+      "tt": 147,
+      "ts": 21,
+      "t": 145,
+      "spectrum": "sphere",
+      "s": 18,
+      "r": 3,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T140"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        1
+      ],
+      "tt": 145,
+      "ts": 21,
+      "t": 144,
+      "spectrum": "sphere",
+      "s": 19,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T141"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        2
+      ],
+      "tt": 145,
+      "ts": 21,
+      "t": 144,
+      "spectrum": "sphere",
+      "s": 19,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T142"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        0
+      ],
+      "tt": 146,
+      "ts": 22,
+      "t": 144,
+      "spectrum": "sphere",
+      "s": 19,
+      "r": 3,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T143"
+    },
+    {
+      "y": [
+        3
+      ],
+      "x": [
+        2
+      ],
+      "tt": 146,
+      "ts": 22,
+      "t": 145,
+      "spectrum": "sphere",
+      "s": 20,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T144"
+    },
+    {
+      "y": [
+        2
+      ],
+      "x": [
+        0
+      ],
+      "tt": 147,
+      "ts": 23,
+      "t": 145,
+      "spectrum": "sphere",
+      "s": 20,
+      "r": 3,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T145"
+    },
+    {
+      "y": [
+        1,
+        2
+      ],
+      "x": [
+        1
+      ],
+      "tt": 147,
+      "ts": 23,
+      "t": 146,
+      "spectrum": "sphere",
+      "s": 21,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T146"
+    },
+    {
+      "y": [
+        3
+      ],
+      "x": [
+        2
+      ],
+      "tt": 147,
+      "ts": 23,
+      "t": 146,
+      "spectrum": "sphere",
+      "s": 21,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T147"
+    },
+    {
+      "y": [
+        3
+      ],
+      "x": [
+        1
+      ],
+      "tt": 150,
+      "ts": 25,
+      "t": 147,
+      "spectrum": "sphere",
+      "s": 21,
+      "r": 4,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T148"
+    },
+    {
+      "y": [],
+      "x": [
+        0
+      ],
+      "tt": 147,
+      "ts": 21,
+      "t": 147,
+      "spectrum": "sphere",
+      "s": 21,
+      "r": 4,
+      "kind": "reaches",
+      "object": "S0",
+      "collection": "table",
+      "id": "T149"
+    },
+    {
+      "y": [],
+      "x": [
+        0
+      ],
+      "tt": 150,
+      "ts": 25,
+      "t": 147,
+      "spectrum": "sphere",
+      "s": 21,
+      "r": 4,
+      "kind": "refutation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T150"
+    },
+    {
+      "y": [
+        0,
+        1
+      ],
+      "x": [
+        0
+      ],
+      "tt": 150,
+      "ts": 25,
+      "t": 147,
+      "spectrum": "sphere",
+      "s": 21,
+      "r": 4,
+      "kind": "refutation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T151"
+    },
+    {
+      "y": [
+        0,
+        1,
+        3
+      ],
+      "x": [
+        0
+      ],
+      "tt": 150,
+      "ts": 25,
+      "t": 147,
+      "spectrum": "sphere",
+      "s": 21,
+      "r": 4,
+      "kind": "refutation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T152"
+    },
+    {
+      "y": [
+        2
+      ],
+      "x": [
+        0
+      ],
+      "tt": 150,
+      "ts": 25,
+      "t": 147,
+      "spectrum": "sphere",
+      "s": 21,
+      "r": 4,
+      "kind": "refutation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T153"
+    },
+    {
+      "y": [
+        2,
+        3
+      ],
+      "x": [
+        0
+      ],
+      "tt": 150,
+      "ts": 25,
+      "t": 147,
+      "spectrum": "sphere",
+      "s": 21,
+      "r": 4,
+      "kind": "refutation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T154"
+    },
+    {
+      "y": [
+        3
+      ],
+      "x": [
+        0
+      ],
+      "tt": 150,
+      "ts": 25,
+      "t": 147,
+      "spectrum": "sphere",
+      "s": 21,
+      "r": 4,
+      "kind": "refutation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T155"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        2
+      ],
+      "tt": 148,
+      "ts": 24,
+      "t": 147,
+      "spectrum": "sphere",
+      "s": 22,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T156"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        3
+      ],
+      "tt": 148,
+      "ts": 24,
+      "t": 147,
+      "spectrum": "sphere",
+      "s": 22,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T157"
+    },
+    {
+      "y": [
+        2
+      ],
+      "x": [
+        1
+      ],
+      "tt": 149,
+      "ts": 25,
+      "t": 148,
+      "spectrum": "sphere",
+      "s": 23,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T158"
+    },
+    {
+      "y": [
+        2
+      ],
+      "x": [
+        0
+      ],
+      "tt": 150,
+      "ts": 26,
+      "t": 148,
+      "spectrum": "sphere",
+      "s": 23,
+      "r": 3,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T159"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        0
+      ],
+      "tt": 150,
+      "ts": 26,
+      "t": 149,
+      "spectrum": "sphere",
+      "s": 24,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T160"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        1
+      ],
+      "tt": 151,
+      "ts": 27,
+      "t": 150,
+      "spectrum": "sphere",
+      "s": 25,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T161"
+    },
+    {
+      "y": [],
+      "x": [
+        0,
+        1
+      ],
+      "tt": 150,
+      "ts": 25,
+      "t": 150,
+      "spectrum": "sphere",
+      "s": 25,
+      "r": 1000,
+      "kind": "reaches",
+      "object": "S0",
+      "collection": "table",
+      "id": "T162"
+    },
+    {
+      "y": [],
+      "x": [
+        2
+      ],
+      "tt": 150,
+      "ts": 25,
+      "t": 150,
+      "spectrum": "sphere",
+      "s": 25,
+      "r": 1000,
+      "kind": "reaches",
+      "object": "S0",
+      "collection": "table",
+      "id": "T163"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        0
+      ],
+      "tt": 152,
+      "ts": 28,
+      "t": 151,
+      "spectrum": "sphere",
+      "s": 26,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T164"
+    },
+    {
+      "y": [
+        2
+      ],
+      "x": [
+        0
+      ],
+      "tt": 153,
+      "ts": 28,
+      "t": 152,
+      "spectrum": "sphere",
+      "s": 26,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T165"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        1
+      ],
+      "tt": 153,
+      "ts": 28,
+      "t": 152,
+      "spectrum": "sphere",
+      "s": 26,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T166"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        0
+      ],
+      "tt": 153,
+      "ts": 29,
+      "t": 152,
+      "spectrum": "sphere",
+      "s": 27,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T167"
+    },
+    {
+      "y": [
+        2
+      ],
+      "x": [
+        1
+      ],
+      "tt": 153,
+      "ts": 29,
+      "t": 152,
+      "spectrum": "sphere",
+      "s": 27,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T168"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        0
+      ],
+      "tt": 154,
+      "ts": 29,
+      "t": 153,
+      "spectrum": "sphere",
+      "s": 27,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T169"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        0
+      ],
+      "tt": 154,
+      "ts": 30,
+      "t": 153,
+      "spectrum": "sphere",
+      "s": 28,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T170"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        3
+      ],
+      "tt": 154,
+      "ts": 30,
+      "t": 153,
+      "spectrum": "sphere",
+      "s": 28,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T171"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        0
+      ],
+      "tt": 155,
+      "ts": 30,
+      "t": 154,
+      "spectrum": "sphere",
+      "s": 28,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T172"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        1
+      ],
+      "tt": 156,
+      "ts": 32,
+      "t": 154,
+      "spectrum": "sphere",
+      "s": 29,
+      "r": 3,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T173"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        0
+      ],
+      "tt": 156,
+      "ts": 31,
+      "t": 155,
+      "spectrum": "sphere",
+      "s": 29,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T174"
+    },
+    {
+      "y": [
+        2
+      ],
+      "x": [
+        1
+      ],
+      "tt": 156,
+      "ts": 31,
+      "t": 155,
+      "spectrum": "sphere",
+      "s": 29,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T175"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        0
+      ],
+      "tt": 156,
+      "ts": 32,
+      "t": 155,
+      "spectrum": "sphere",
+      "s": 30,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T176"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        0
+      ],
+      "tt": 159,
+      "ts": 35,
+      "t": 156,
+      "spectrum": "sphere",
+      "s": 31,
+      "r": 4,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T177"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        0
+      ],
+      "tt": 159,
+      "ts": 34,
+      "t": 157,
+      "spectrum": "sphere",
+      "s": 31,
+      "r": 3,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T178"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        0
+      ],
+      "tt": 159,
+      "ts": 34,
+      "t": 158,
+      "spectrum": "sphere",
+      "s": 32,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T179"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        0
+      ],
+      "tt": 159,
+      "ts": 35,
+      "t": 158,
+      "spectrum": "sphere",
+      "s": 33,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T180"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        0
+      ],
+      "tt": 161,
+      "ts": 36,
+      "t": 159,
+      "spectrum": "sphere",
+      "s": 33,
+      "r": 3,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T181"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        0
+      ],
+      "tt": 162,
+      "ts": 37,
+      "t": 161,
+      "spectrum": "sphere",
+      "s": 35,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T182"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        0
+      ],
+      "tt": 162,
+      "ts": 38,
+      "t": 161,
+      "spectrum": "sphere",
+      "s": 36,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T183"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        0
+      ],
+      "tt": 163,
+      "ts": 39,
+      "t": 162,
+      "spectrum": "sphere",
+      "s": 37,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T184"
+    },
+    {
+      "y": [
+        1,
+        2
+      ],
+      "x": [
+        0
+      ],
+      "tt": 165,
+      "ts": 41,
+      "t": 163,
+      "spectrum": "sphere",
+      "s": 38,
+      "r": 3,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T185"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        0
+      ],
+      "tt": 165,
+      "ts": 40,
+      "t": 164,
+      "spectrum": "sphere",
+      "s": 38,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T186"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        0
+      ],
+      "tt": 167,
+      "ts": 43,
+      "t": 164,
+      "spectrum": "sphere",
+      "s": 39,
+      "r": 4,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T187"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        0
+      ],
+      "tt": 166,
+      "ts": 42,
+      "t": 165,
+      "spectrum": "sphere",
+      "s": 40,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T188"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        1
+      ],
+      "tt": 167,
+      "ts": 43,
+      "t": 166,
+      "spectrum": "sphere",
+      "s": 41,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T189"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        0
+      ],
+      "tt": 168,
+      "ts": 44,
+      "t": 166,
+      "spectrum": "sphere",
+      "s": 41,
+      "r": 3,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T190"
+    },
+    {
+      "y": [
+        1
+      ],
+      "x": [
+        0
+      ],
+      "tt": 168,
+      "ts": 44,
+      "t": 167,
+      "spectrum": "sphere",
+      "s": 42,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T191"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        0
+      ],
+      "tt": 170,
+      "ts": 45,
+      "t": 168,
+      "spectrum": "sphere",
+      "s": 42,
+      "r": 3,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T192"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        2
+      ],
+      "tt": 171,
+      "ts": 46,
+      "t": 168,
+      "spectrum": "sphere",
+      "s": 42,
+      "r": 4,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T193"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        1
+      ],
+      "tt": 169,
+      "ts": 45,
+      "t": 168,
+      "spectrum": "sphere",
+      "s": 43,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T194"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        0
+      ],
+      "tt": 171,
+      "ts": 47,
+      "t": 168,
+      "spectrum": "sphere",
+      "s": 43,
+      "r": 4,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T195"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        0
+      ],
+      "tt": 170,
+      "ts": 46,
+      "t": 169,
+      "spectrum": "sphere",
+      "s": 44,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T196"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        0
+      ],
+      "tt": 174,
+      "ts": 49,
+      "t": 171,
+      "spectrum": "sphere",
+      "s": 45,
+      "r": 4,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T197"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        0
+      ],
+      "tt": 180,
+      "ts": 56,
+      "t": 177,
+      "spectrum": "sphere",
+      "s": 52,
+      "r": 4,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T198"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        0
+      ],
+      "tt": 182,
+      "ts": 57,
+      "t": 180,
+      "spectrum": "sphere",
+      "s": 54,
+      "r": 3,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T199"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        0
+      ],
+      "tt": 181,
+      "ts": 57,
+      "t": 180,
+      "spectrum": "sphere",
+      "s": 55,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T200"
+    },
+    {
+      "y": [
+        0
+      ],
+      "x": [
+        0
+      ],
+      "tt": 182,
+      "ts": 58,
+      "t": 181,
+      "spectrum": "sphere",
+      "s": 56,
+      "r": 2,
+      "kind": "equation",
+      "object": "S0",
+      "collection": "table",
+      "id": "T201"
+    }
+  ]
+}

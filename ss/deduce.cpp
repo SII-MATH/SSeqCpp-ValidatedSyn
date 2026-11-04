@@ -165,7 +165,7 @@ SSRet Category::DeduceTrivialCofDiffs(SSFlag flag)  //// TODO: skip if there is 
     SSRet rt;
     while (true) {
         SSRet rt1;
-        for (size_t index = 0; index < rings_.size(); ++index) {
+        for (size_t index = 0; index < cofseqs_.size(); ++index) {
             if (rt1 += DeduceTrivialCofDiffs(index, flag))
                 return rt1;
         }
@@ -276,57 +276,10 @@ SSRet Category::DeduceDiffBySynthetic(SSFlag flag)
 }
 
 /* Deduce differentials by synthetic method */
-SSRet Category::DeduceDiffBySyntheticCofseq(SSFlag flag)
+SSRet Category::DeduceDiffBySyntheticCofseq(SSFlag)
 {
-    SSRet rt;
-    while (true) {
-        SSRet rt1;
-        for (size_t iCof = 0; iCof < cofseqs_.size(); ++iCof) {
-            auto& cofseq = cofseqs_[iCof];
-            for (size_t iTri = 0; iTri < 3; ++iTri) {
-                auto& nodes_cofseq = cofseq.nodes_cofseq[iTri];
-                auto& map_name = maps_[cofseq.indexMap[iTri]]->name;
-                size_t iTri_next = NextiTri(iTri);
-                for (AdamsDeg deg : nodes_cofseq.front().degs()) {
-                    const auto& sc = nodes_cofseq.GetRecentSc(deg);
-                    for (size_t i = 0; i < sc.levels.size(); ++i) {
-                        if (sc.diffs[i] == NULL_DIFF && sc.levels[i] > LEVEL_MAX / 2) {
-                            AdamsDeg deg_fx;
-                            int1d fx;
-                            if (GetSynImage(IndexCof(iCof, iTri), deg, sc.basis[i], LEVEL_PERM, deg_fx, fx, -1, 0) == 0) {  ////
-                                int r = deg_fx.s - deg.s;
-                                if (r == maps_[cofseq.indexMap[iTri]]->deg.s)
-                                    continue;
-                                fx = Residue(fx, *cofseq.nodes_ss[iTri_next], deg_fx, LEVEL_PERM);
-                                if (fx.size() && IsNewDiff(*cofseq.nodes_ss[iTri_next], deg_fx, fx, int1d{}, R_PERM - 1)) {
-                                    Logger::LogDiff(depth_, EnumReason::synext_p, cofseq.nameCw[iTri_next], deg_fx, R_PERM - 1, fx, int1d{}, "", flag);
-                                    if (rt1 += SetCwDiffGlobal(cofseq.indexCw[iTri_next], deg_fx, fx, int1d{}, R_PERM - 1, true, flag)) {
-                                        if (flag & SSFlag::log_proof)
-                                            rt1.err_msg = fmt::format("Apply Mahowald trick to `{} {} [{}]` and map `{}`. {}", cofseq.nameCw[iTri], deg, myio::Serialize(sc.basis[i]), map_name, rt1.err_msg);
-                                        return rt1;
-                                    }
-                                }
-                                if (IsNewDiffCofseq(cofseq, iTri, deg, sc.basis[i], fx, r)) {
-                                    Logger::LogDiff(depth_, EnumReason::synext, fmt::format("{}:{}", cofseq.name, iTri), deg, r, sc.basis[i], fx, "", flag);
-                                    if (rt1 += SetDiffLeibnizCofseq(cofseq, iTri, deg, sc.basis[i], fx, r, flag)) {
-                                        if (flag & SSFlag::log_proof)
-                                            rt1.err_msg = fmt::format("Apply Mahowald trick to `{} {} [{}]` and map `{}`. {}", cofseq.nameCw[iTri], deg, myio::Serialize(sc.basis[i]), map_name, rt1.err_msg);
-                                        return rt1;
-                                    }
-                                    rt1 += SSRet::CHANGE();
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        if (rt1.IsChanged())
-            rt += rt1;
-        else
-            break;
-    }
-    return rt;
+    // Both SynCs and SynCsIn are deliberately disabled in this fork.
+    return SSRet::NUL();
 }
 
 SSRet Category::TryDiff(IndexUniv iCw, AdamsDeg deg_x, const int1d& x, const int1d& dx, int r, SSFlag flag, bool tryY)
@@ -698,7 +651,7 @@ SSFlag GetFlags(const myio::string1d& str_flags)
             flags = flags | SSFlag::deduce_4_all_x;
         else if (f == "dxy")
             flags = flags | SSFlag::deduce_dxy;
-        else if (f == "syn")
+        else if (f == "validated_syn" || f == "syn")
             flags = flags | SSFlag::synthetic | SSFlag::cofseq;
         else if (f == "log_proof")
             flags = flags | SSFlag::log_proof;

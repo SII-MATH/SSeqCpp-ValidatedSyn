@@ -6,3 +6,9 @@ build*/
 build-macbook
 *__pycache__/
 .VSCodeCounter/
+# Independent computation inputs, run state and local caches
+.runs/
+.seed/
+*.core
+__pycache__/
+ss.log
