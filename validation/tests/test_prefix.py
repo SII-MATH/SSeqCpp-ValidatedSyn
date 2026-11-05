@@ -1,5 +1,6 @@
 """The comparison is a gate, not a source of inference facts."""
 import json
+import hashlib
 from pathlib import Path
 import sqlite3
 import sys
@@ -62,7 +63,13 @@ class PrefixTests(unittest.TestCase):
         database(self.current, [(1,*FIRST),(2,*MANUAL),(3,*ORDINARY),(4,*ORDINARY)])
         self.assertFalse(compare(self.current,self.reference)['passed'])
 
-    def controller(self, missing_manual):
+    def test_resume_rechecks_only_the_previously_verified_prefix(self):
+        syn=(SYN[0],'SynValidated',*SYN[2:])
+        database(self.current,[(1,*FIRST),(2,*MANUAL),(3,*ORDINARY),(4,*syn)])
+        self.assertTrue(compare(self.current,self.reference,current_stop=3)['passed'])
+        self.assertFalse(compare(self.current,self.reference)['passed'])
+
+    def controller(self, missing_manual, resume_after_ordinary=False):
         project=self.root/'project';project.mkdir();(project/'validation').mkdir()
         (project/'validation/targets.json').write_text('{}')
         directory=self.root/'run';directory.mkdir()
@@ -84,12 +91,17 @@ elif a[0]=='verify':
  (d/'acceptance.json').write_text(json.dumps({'total':201,'passed':201,'missing':[],'errors':[],'forbidden_outputs':0}))
 '''.replace('if a[0]==\'reset\':',f'SCHEMA={SCHEMA!r}\nFIRST={FIRST!r}\nMANUAL={MANUAL!r}\nORDINARY={ORDINARY!r}\nMISSING={missing_manual!r}\nif a[0]==\'reset\':'))
         binary.chmod(0o755)
+        if resume_after_ordinary:
+            database(directory/'log.db',[(1,*FIRST),(2,*MANUAL),(3,*ORDINARY)])
+            (directory/'status.json').write_text(json.dumps({'phase':'ordinary-complete',
+                'historical_log_imported':False,'last_completed_command':'ordinary','command':'ordinary',
+                'targets_sha256':hashlib.sha256(b'{}').hexdigest(),'runner_pid':0}))
         with patch.object(runner,'ROOT',project):
             if missing_manual:
                 with self.assertRaisesRegex(RuntimeError,'new rules remain disabled'):
                     runner.run(binary,directory,1,261,official_log=self.reference)
             else:
-                runner.run(binary,directory,1,261,official_log=self.reference)
+                runner.run(binary,directory,1,261,official_log=self.reference,resume=resume_after_ordinary)
         commands=[json.loads(line) for line in (directory/'commands').read_text().splitlines()]
         return directory,commands
 
@@ -106,6 +118,12 @@ elif a[0]=='verify':
         self.assertNotIn('flags=validated_syn',commands[1])
         self.assertEqual(commands[2][:2],['deduce','synthetic'])
         self.assertEqual(json.loads((directory/'status.json').read_text())['phase'],'passed')
+
+    def test_resume_after_normal_save_does_not_repeat_reset_or_ordinary(self):
+        directory,commands=self.controller(False,True)
+        self.assertEqual([x[:2] for x in commands[:2]],[['deduce','synthetic'],['deduce','auto']])
+        self.assertEqual([x[0] for x in commands],['deduce','deduce','verify'])
+        self.assertTrue(json.loads((directory/'ordinary-comparison.json').read_text())['passed'])
 
 
 if __name__ == '__main__':

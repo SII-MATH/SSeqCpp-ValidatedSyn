@@ -1,6 +1,7 @@
 #include "algebras/linalg.h"
 #include "main.h"
 #include "mylog.h"
+#include "run_checkpoint.h"
 #include <set>
 
 /* Deduce zero differentials for degree reason */
@@ -246,9 +247,11 @@ SSRet Category::DeduceManual(SSFlag flag)
 
 SSRet Category::DeduceDiffBySynthetic(SSFlag flag)
 {
-    SSRet rt;
+    SSRet rt(run_checkpoint_?run_checkpoint_->AccumulatedCode():0);
     const size_t num_cw = rings_.size() + modules_.size();
+    int iteration=run_checkpoint_?run_checkpoint_->FirstRound():1;
     while (true) {
+        if(run_checkpoint_) run_checkpoint_->BeginRound(iteration++);
         SSRet rt1;
         for (size_t jCw = 0; jCw < num_cw; ++jCw) {
             auto iCw = jCw < rings_.size() ? IndexRing(jCw) : IndexMod(jCw - rings_.size());
@@ -256,6 +259,8 @@ SSRet Category::DeduceDiffBySynthetic(SSFlag flag)
             if (depth_ > 0 && nodes_ss.back().empty())
                 continue;
             for (AdamsDeg deg : GetSSDegs(iCw)) {
+                auto step=[&]() -> SSRet {
+                SSRet changed;
                 // A conclusion can rewrite this very degree (including its
                 // basis and diff vectors). Never iterate live staircase rows
                 // across a mutating rule call, or pass aliases into that call.
@@ -264,15 +269,20 @@ SSRet Category::DeduceDiffBySynthetic(SSFlag flag)
                     if (sc.levels[i] > LEVEL_PERM && sc.diffs[i] != NULL_DIFF) {
                         const int r = LEVEL_MAX - sc.levels[i];
                         bool hasCross = GetCrossR(nodes_ss, deg, GetTMax(iCw), r) <= r;
-                        if (rt1 += SetCwDiffSynthetic(iCw, deg, sc.basis[i], sc.diffs[i], r, hasCross, flag))
-                            return rt1;
+                        if (changed += SetCwDiffSynthetic(iCw, deg, sc.basis[i], sc.diffs[i], r, hasCross, flag))
+                            return changed;
                     }
                 }
+                return changed;
+                };
+                if(rt1+=CheckpointStep("syn/"+GetCwName(iCw)+"/"+std::to_string(deg.s)+","+std::to_string(deg.t),step)) return rt1;
             }
         }
-        if (rt1.IsChanged())
+        if(run_checkpoint_) run_checkpoint_->EndRound();
+        if (rt1.IsChanged() || (run_checkpoint_&&run_checkpoint_->Changed())) {
             rt += rt1;
-        else
+            if(run_checkpoint_&&run_checkpoint_->Changed()) rt+=SSRet::CHANGE();
+        } else
             break;
     }
     return rt;
@@ -563,7 +573,7 @@ SSRet Category::DeduceDiffs(IndexUniv& iCw, int stem_min, int stem_max, SSFlag f
 {
     SSRet rt;
     if (depth_ == 0)
-        if (rt += DeduceTrivialCwDiffs(flag))
+        if (rt += CheckpointStep("ss/"+GetCwName(iCw)+"/pre",[&]{return DeduceTrivialCwDiffs(flag);}))
             return rt;
 
     std::string_view name = GetCwName(iCw);
@@ -575,11 +585,11 @@ SSRet Category::DeduceDiffs(IndexUniv& iCw, int stem_min, int stem_max, SSFlag f
         if (deg.stem() < stem_min || deg.stem() > stem_max)
             continue;
 
-        if (rt += DeduceDiffs4Deg(iCw, deg, flag))
+        if (rt += CheckpointStep("ss/"+GetCwName(iCw)+"/"+std::to_string(deg.s)+","+std::to_string(deg.t),[&]{return DeduceDiffs4Deg(iCw, deg, flag);}))
             return rt;
     }
     if (depth_ == 0) {
-        if (rt += DeduceTrivialCwDiffs(flag))
+        if (rt += CheckpointStep("ss/"+GetCwName(iCw)+"/post",[&]{return DeduceTrivialCwDiffs(flag);}))
             return rt;
     }
 
@@ -756,17 +766,21 @@ int main_deduce_synthetic(int argc, char** argv, int& index, const char* desc)
     std::string cat_name;
 
     myio::CmdArg1d args = {{"category", &cat_name}};
-    myio::CmdArg1d op_args = {};
+    double checkpoint_seconds=300; bool checkpoint_resume=false;
+    myio::CmdArg1d op_args = {{"checkpoint_seconds",&checkpoint_seconds},{"checkpoint_resume",&checkpoint_resume}};
     if (int error = myio::ParseArguments(argc, argv, index, PROGRAM, desc, VERSION, args, op_args))
         return error;
 
     SSFlag flag = SSFlag::synthetic | SSFlag::cofseq | SSFlag::log_proof;
-    Category category(cat_name, "", flag, true);
+    Category category(cat_name, "", flag, true, false, checkpoint_resume);
+    auto checkpoint=category.EnableCheckpoints(cat_name,"synthetic",json::object(),checkpoint_seconds,checkpoint_resume);
+    if(checkpoint && checkpoint->Complete()) {category.SaveNodes(cat_name,"",!checkpoint_resume,flag);return 0;}
     if (auto rt = category.DeduceDiffBySynthetic(flag))
         throw ErrorIdMsg(rt.code, "SSError");
     if (auto rt = category.DeduceDiffBySyntheticCofseq(flag))
         throw ErrorIdMsg(rt.code, "SSError");
-    category.SaveNodes(cat_name, "", true, flag);
+    if(checkpoint) checkpoint->Finish();
+    category.SaveNodes(cat_name, "", !checkpoint_resume, flag);
     category.PrintSummary();
 
     return 0;
@@ -823,9 +837,10 @@ int main_deduce_auto(int argc, char** argv, int& index, const char* desc)
     int T = 1, id_thread = 0;
     myio::string1d str_flags, mode, deduce_list;
     int num = 10;
+    double checkpoint_seconds=300; bool checkpoint_resume=false;
 
     myio::CmdArg1d args = {{"category", &cat_name}};
-    myio::CmdArg1d op_args = {{"stem_min", &stem_min}, {"stem_max", &stem_max}, {"T", &T}, {"id_thread", &id_thread}, {"flags", &str_flags}, {"mode", &mode}, {"deduce_list", &deduce_list}, {"num", &num}};
+    myio::CmdArg1d op_args = {{"stem_min", &stem_min}, {"stem_max", &stem_max}, {"T", &T}, {"id_thread", &id_thread}, {"flags", &str_flags}, {"mode", &mode}, {"deduce_list", &deduce_list}, {"num", &num},{"checkpoint_seconds",&checkpoint_seconds},{"checkpoint_resume",&checkpoint_resume}};
     if (int error = myio::ParseArguments(argc, argv, index, PROGRAM, desc, VERSION, args, op_args))
         return error;
     SSFlag flags = GetFlags(str_flags) | SSFlag::cofseq | SSFlag::log_proof;
@@ -850,19 +865,24 @@ int main_deduce_auto(int argc, char** argv, int& index, const char* desc)
     if (do_cs)
         flags = flags | SSFlag::cofseq;
 
-    Category category(cat_name, "", flags);
-    int count = 0;
+    Category category(cat_name, "", flags, true, false, checkpoint_resume);
+    json options={{"stem_min",stem_min},{"stem_max",stem_max},{"T",T},{"id_thread",id_thread},{"flags",uint32_t(flags)},{"flag_names",str_flags},{"mode",mode},{"deduce_list",deduce_list},{"num",num}};
+    auto checkpoint=category.EnableCheckpoints(cat_name,"auto",options,checkpoint_seconds,checkpoint_resume);
+    if(checkpoint && checkpoint->Complete()) {category.SaveNodes(cat_name,"",!checkpoint_resume,flags);return 0;}
+    int count = checkpoint?checkpoint->FirstRound()-1:0;
     try {
         while (count++ < num) {
             SSRet rt;
-            auto id_checkpt = Logger::GetCheckpoint();
+            if(checkpoint) checkpoint->BeginRound(count);
+            auto id_checkpt = checkpoint?checkpoint->RoundStart():Logger::GetCheckpoint();
             if (do_ss)
                 if (rt += category.DeduceDiffs(stem_min, stem_max, T, id_thread, flags); rt)
                     throw RunTimeError("SSError");
             if (do_cs)
                 if (rt += category.DeduceCofDiffs(stem_min, stem_max, T, id_thread, flags); rt)
                     throw RunTimeError("SSError");
-            if (!rt.IsChanged())
+            if(checkpoint) checkpoint->EndRound();
+            if (!rt.IsChanged() && !(checkpoint&&checkpoint->Changed()))
                 break;
             if (!(flags & SSFlag::no_exclusions))
                 category.LoadExclusions(id_checkpt + 1, flags);
@@ -872,7 +892,8 @@ int main_deduce_auto(int argc, char** argv, int& index, const char* desc)
         category.SaveNodes(cat_name, "debug", true, flags);
         return -37;
     }
-    category.SaveNodes(cat_name, "", true, flags);
+    if(checkpoint) checkpoint->Finish();
+    category.SaveNodes(cat_name, "", !checkpoint_resume, flags);
     fmt::print("round={}     \n", count);
     category.PrintSummary();
 

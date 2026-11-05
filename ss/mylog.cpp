@@ -87,6 +87,9 @@ void Logger::SetOutDeduce(const char* filename)
 
     if (!db_) {
         db_.open(filename);
+        // Readers see the last committed count while deduction keeps writing.
+        db_.execute_cmd("PRAGMA journal_mode=WAL");
+        db_.execute_cmd("PRAGMA synchronous=FULL");
         db_.create_log();
         db_.InsertInfo(-1, cmd_);
         db_.begin_transaction();

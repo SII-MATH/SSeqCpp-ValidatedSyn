@@ -47,6 +47,12 @@ Database::~Database()
     }
 }
 
+void Database::rollback_transaction()
+{
+    numInTransaction_ = -1;
+    if (conn_ && !sqlite3_get_autocommit(conn_)) execute_cmd("ROLLBACK");
+}
+
 void myio::Database::open(std::string filename)
 {
     filename_ = std::move(filename);

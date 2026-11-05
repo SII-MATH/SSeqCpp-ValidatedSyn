@@ -9,14 +9,15 @@ FIELDS = 'depth,reason,name,s,t,r,x,dx,info'
 SYNTHETIC = ('Syn', 'SynValidated', 'SynCs', 'SynCsIn')
 
 
-def compare(current, official):
+def compare(current, official, current_stop=None):
     with sqlite3.connect(Path(current).resolve().as_uri() + '?mode=ro', uri=True) as got, \
          sqlite3.connect(Path(official).resolve().as_uri() + '?mode=ro', uri=True) as ref:
         start = ref.execute('SELECT min(id) FROM log').fetchone()[0]
         stop = ref.execute("SELECT min(id) FROM log WHERE reason IN ('Syn','SynCs','SynCsIn')").fetchone()[0]
         if start is None or stop is None:
             raise ValueError('Reference must contain an ordinary prefix followed by Syn')
-        forbidden = got.execute("SELECT reason,count(*) FROM log WHERE reason IN (?,?,?,?) GROUP BY reason", SYNTHETIC).fetchall()
+        limit = '' if current_stop is None else ' AND id<='+str(int(current_stop))
+        forbidden = got.execute("SELECT reason,count(*) FROM log WHERE reason IN (?,?,?,?)"+limit+" GROUP BY reason", SYNTHETIC).fetchall()
         result = {'passed': False, 'reference_first_id': start,
                   'reference_first_syn_id': stop, 'matched': 0,
                   'synthetic_outputs': forbidden,
@@ -28,13 +29,13 @@ def compare(current, official):
         # retained mathematical event, rather than treating absent rows as a
         # mismatch. Require that event to have exactly one match in reset.
         first = ref.execute(f'SELECT id,{FIELDS} FROM log WHERE reason IS NOT NULL ORDER BY id LIMIT 1').fetchone()
-        candidates = got.execute('SELECT id FROM log WHERE depth IS ? AND reason IS ? AND name IS ? AND s IS ? AND t IS ? AND r IS ? AND x IS ? AND dx IS ? AND info IS ? LIMIT 2', first[1:]).fetchall()
+        candidates = got.execute('SELECT id FROM log WHERE depth IS ? AND reason IS ? AND name IS ? AND s IS ? AND t IS ? AND r IS ? AND x IS ? AND dx IS ? AND info IS ?'+limit+' LIMIT 2', first[1:]).fetchall()
         if len(candidates) != 1:
             result['error'] = f'Reference start has {len(candidates)} matches in initialization'
             return result
         result['current_first_id'] = candidates[0][0]
         expected = ref.execute(f'SELECT id,{FIELDS} FROM log WHERE id>=? AND id<? AND reason IS NOT NULL ORDER BY id', (start, stop))
-        actual = got.execute(f'SELECT id,{FIELDS} FROM log WHERE id>=? AND depth>=0 AND reason IS NOT NULL ORDER BY id', (candidates[0][0],))
+        actual = got.execute(f'SELECT id,{FIELDS} FROM log WHERE id>=? AND depth>=0 AND reason IS NOT NULL'+limit+' ORDER BY id', (candidates[0][0],))
         while True:
             a, b = actual.fetchone(), expected.fetchone()
             if a is None and b is None:

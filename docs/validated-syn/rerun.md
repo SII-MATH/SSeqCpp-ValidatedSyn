@@ -46,8 +46,10 @@ The native C2 rule tests and seven comparison/controller tests also pass.
 
 The reference database is opened read-only by the comparison process only.
 It is never passed to the native inference engine. Terminal line counts
-and committed SQLite row counts are separate fields in `status.json`;
-SQLite counts are updated after each completed command. Full terminal
+and committed SQLite row counts are separate fields in `status.json`.
+The native engine publishes real committed counts every 30 seconds at the
+next outer degree boundary. WAL mode permits ordinary read-only queries
+during deduction. Full terminal
 transcripts are not retained; failures keep the final 80 lines.
 
 ```sh
@@ -59,3 +61,54 @@ SS_VALIDATED_CACHE_STATS=1 python validation/run.py NEW_RUN_DIRECTORY \
 The fixed-map and read-only-frame caches remain enabled. The old handoff
 script is retained for the earlier run's provenance; mixed-rule checkpoints
 cannot enter this new controller's staged fresh-run path.
+
+## Periodic recovery
+
+The default `checkpoint_seconds=300` also saves at iteration boundaries.
+The interval is a safe-point target: a single unusually long degree or
+initialization step can delay the next save. The checkpoint is one reusable
+`recovery.sqlite3`, containing both SS layers, cofiber layers, synchronization
+flags, array shapes, scan degrees, exclusion caches, iteration start log ID,
+accumulated change state and the last completed scan step. It contains no
+external historical proof inputs and does not replace the fixed E2/maps.
+
+Only the outer state is saved. Completed log transactions are committed
+first; the state and its log boundary are then replaced in one SQLite
+transaction. An exception rolls back that transaction explicitly. If a
+process dies before the new state is committed, the previous checkpoint
+remains usable. Recovery discards any log/exclusion tail after that
+checkpoint and skips already completed scan operations. Preserving the
+in-memory exclusion cache, rather than eagerly loading all recorded
+exclusions, is necessary to preserve the original proof-search order.
+
+The checkpoint is marked complete before updating the ordinary SS database
+files. Recovery can load its complete layers directly and rewrite those
+tables if a process dies partway through that final multi-file save.
+Fixed E2 map caches stay warm during periodic saves; they may be recomputed
+on restart. State-dependent rule memoization still ends with its read frame.
+
+Native regression tests forcibly kill a private C2-triangle calculation at
+a degree checkpoint, a later iteration boundary, the final save boundary,
+and during the standalone synthetic scan. Every resumed run has exactly
+the same ordered mathematical events (including proof text) and final
+SS/cofiber rows as the uninterrupted pre-checkpoint binary `64bc97c`.
+Separate native tests check exact layer/flag/cache serialization, log-tail
+truncation, rollback after a failed checkpoint write, and rejection of trial
+state saves. Nine controller/comparison tests cover the prefix gate and
+resuming after a normally saved ordinary command.
+
+```sh
+python validation/test_checkpoints.py RAW_E2_DIRECTORY --reference PREVIOUS_FIXED_SS_BINARY
+python -m unittest discover -s validation/tests -p test_prefix.py
+```
+
+```sh
+python validation/run.py EXISTING_RUN_DIRECTORY --resume \
+  --binary SAME_OR_APPROVED_UPDATED_BINARY --official-log OFFICIAL_PROOFS_DB
+```
+
+`status.json` distinguishes `saved_log_rows` from
+`recovery.recoverable_log_rows`. Logs published since the latest state
+checkpoint are visible, but are trimmed on recovery so that the proof log
+and the restored mathematical state stay consistent. The immutable 201
+targets are not inference inputs, including during a resumed calculation.

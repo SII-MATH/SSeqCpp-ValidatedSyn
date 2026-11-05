@@ -202,6 +202,7 @@ public:
         if (numInTransaction_ >= 0)
             ++numInTransaction_;
     }
+    void rollback_transaction();
 
 public:
     bool is_open() const

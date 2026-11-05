@@ -730,11 +730,11 @@ SSRet Category::DeduceCofDiffs(int stem_min, int stem_max, int T, int id_thread,
 {
     SSRet rt;
     if (depth_ == 0) {
-        if (rt += DeduceTrivialCofDiffs(flag))
+        if (rt += CheckpointStep("cs/pre0",[&]{return DeduceTrivialCofDiffs(flag);}))
             return rt;
-        if (rt += CommuteCofseq(flag))
+        if (rt += CheckpointStep("cs/commute",[&]{return CommuteCofseq(flag);}))
             return rt;
-        if (rt += DeduceTrivialCofDiffs(flag))
+        if (rt += CheckpointStep("cs/pre1",[&]{return DeduceTrivialCofDiffs(flag);}))
             return rt;
     }
     for (size_t iCof : deduce_list_cofseq_) {
@@ -746,7 +746,7 @@ SSRet Category::DeduceCofDiffs(int stem_min, int stem_max, int T, int id_thread,
                 if (deg.stem() >= stem_min && deg.stem() <= stem_max && BelowS0VanishingLine(deg)) {
                     if (depth_ == 0)
                         fmt::print("{}:{} t={} deg={}                        \r", cofseq.name, iTri, deg.t, deg);
-                    if (rt += DeduceCofDiffs4Deg(IndexCof(iCof, iTri), deg, flag))
+                    if (rt += CheckpointStep("cs/"+cofseq.name+":"+std::to_string(iTri)+"/"+std::to_string(deg.s)+","+std::to_string(deg.t),[&]{return DeduceCofDiffs4Deg(IndexCof(iCof, iTri), deg, flag);}))
                         return rt;
                 }
             }

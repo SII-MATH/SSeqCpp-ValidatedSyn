@@ -3,6 +3,7 @@
  */
 
 #include "main.h"
+#include "run_checkpoint.h"
 #include "mylog.h"
 #include <fstream>
 #include <regex>
@@ -135,7 +136,7 @@ void Category::LoadExclusions(int id_start, SSFlag flag)
             nodes.exclusions.Sort();
 }
 
-Category::Category(const std::string& cat_root, const std::string& ckpt_name, SSFlag flags, bool log, bool loadD2)
+Category::Category(const std::string& cat_root, const std::string& ckpt_name, SSFlag flags, bool log, bool loadD2, bool recovering)
 {
     try {  //// TODO: check files in the beginning
         std::string cat_nodes;
@@ -143,6 +144,10 @@ Category::Category(const std::string& cat_root, const std::string& ckpt_name, SS
             cat_nodes = fmt::format("{}/checkpoints/{}", cat_root, ckpt_name);
 
         js_ = myio::load_json(fmt::format("{}/ss.json", cat_root));
+        if(recovering) {
+            if(loadD2 || !ckpt_name.empty() || (flags&SSFlag::pi)) throw RunTimeError("Unsupported recovery mode");
+            RunCheckpoint::Validate(cat_root);
+        }
         if (log) {
             auto path_log = fmt::format("{}/log.db", cat_root);
             Logger::SetOutDeduce(path_log.c_str());
@@ -188,9 +193,12 @@ Category::Category(const std::string& cat_root, const std::string& ckpt_name, SS
                 ring.t_max = db.get_metadata_int("t_max");
                 if (ring.t_max <= 0)
                     throw RunTimeError(fmt::format("No t_max. name={}.", ring.name));
-                ring.nodes_ss.push_back(db_nodes.load_ss(table_prefix));
-                ring.nodes_ss.push_back({});
-                ring.degs_ss = ring.nodes_ss.front().arr_degs();
+                if(recovering) RunCheckpoint::LoadNodes(cat_root,name,ring.nodes_ss,&ring.degs_ss);
+                else {
+                    ring.nodes_ss.push_back(db_nodes.load_ss(table_prefix));
+                    ring.nodes_ss.push_back({});
+                    ring.degs_ss = ring.nodes_ss.front().arr_degs();
+                }
                 ring.gb = Groebner(ring.t_max, {}, db.load_gb(table_prefix, DEG_MAX));
 
                 if (flags & SSFlag::pi) {
@@ -240,9 +248,12 @@ Category::Category(const std::string& cat_root, const std::string& ckpt_name, SS
                 mod.t_max = db.get_metadata_int("t_max");
                 if (mod.t_max <= 0)
                     throw RunTimeError(fmt::format("No t_max. name={}.", mod.name));
-                mod.nodes_ss.push_back(db_nodes.load_ss(table_prefix));
-                mod.nodes_ss.push_back({});
-                mod.degs_ss = mod.nodes_ss.front().arr_degs();
+                if(recovering) RunCheckpoint::LoadNodes(cat_root,name,mod.nodes_ss,&mod.degs_ss);
+                else {
+                    mod.nodes_ss.push_back(db_nodes.load_ss(table_prefix));
+                    mod.nodes_ss.push_back({});
+                    mod.degs_ss = mod.nodes_ss.front().arr_degs();
+                }
                 Mod1d xs = db.load_gb_mod(table_prefix, DEG_MAX);
                 mod.gb = GroebnerMod(&ring.gb, mod.t_max, {}, std::move(xs));
 
@@ -441,7 +452,7 @@ Category::Category(const std::string& cat_root, const std::string& ckpt_name, SS
             maps_.push_back(std::move(map));
         }
 
-        for (auto& json_map : json_maps) {
+        if(!recovering) for (auto& json_map : json_maps) {
             std::string from = json_map.at("from");
             if (from == "S0" && json_map.contains("factor")) {
                 std::string to = json_map.at("to");
@@ -482,7 +493,10 @@ Category::Category(const std::string& cat_root, const std::string& ckpt_name, SS
                     cofseq.nodes_cofseq[iTri].push_back({});
                     cofseq.nodes_cofseq[iTri].push_back({});
                 }
-                if (myio::FileExists(abs_path_cofseq)) { /* Load cofseq from database */
+                if(recovering) {
+                    for(size_t i=0;i<3;++i) RunCheckpoint::LoadNodes(cat_root,cofseq.name+":"+std::to_string(i),cofseq.nodes_cofseq[i]);
+                }
+                else if (myio::FileExists(abs_path_cofseq)) { /* Load cofseq from database */
                     DBSS db(abs_path_cofseq);
                     db.create_cofseq(fmt::format("cofseq_{}", cofseq.name));
                     auto node_cofseq = db.load_cofseq(fmt::format("cofseq_{}", cofseq.name));
@@ -492,12 +506,12 @@ Category::Category(const std::string& cat_root, const std::string& ckpt_name, SS
                 cofseqs_.push_back(cofseq);
                 ++iCof;
             }
-            if (auto rt = SyncCofseq(flags))
+            if (!recovering) if (auto rt = SyncCofseq(flags))
                 throw RunTimeError(fmt::format("Failed to SyncCofseq(). Error={}.\n", rt.code));
         }
 
         /*# Load exclusions */
-        if (log && !(flags & SSFlag::no_exclusions))
+        if (log && !recovering && !(flags & SSFlag::no_exclusions))
             LoadExclusions(0, flags);
 
         /*# Load commutativities */

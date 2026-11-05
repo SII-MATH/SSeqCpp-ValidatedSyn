@@ -10,6 +10,9 @@
 #include <ranges>
 #include <set>
 #include <variant>
+#include <functional>
+
+class RunCheckpoint;
 
 inline const char* PROGRAM = "ss";
 inline const char* VERSION = "1.0.1";
@@ -164,6 +167,7 @@ inline const auto EmptyStaircase = Staircase{};
 
 class SS
 {
+    friend class RunCheckpoint;
 protected:
     std::vector<std::vector<Staircase>> data_;
     /* The first bit marks the existance of data.
@@ -276,6 +280,7 @@ struct Exclusion
 using Exclusion1d = std::vector<Exclusion>;
 class Exclusions
 {
+    friend class RunCheckpoint;
 protected:
     std::vector<std::vector<Exclusion1d>> data_;
     std::vector<std::vector<uint32_t>> valid_;
@@ -672,6 +677,7 @@ namespace validated_syn { struct Cache; }
 
 class Category
 {
+    friend class RunCheckpoint;
 protected:
     RingSp1d rings_;
     ModSp1d modules_;
@@ -686,9 +692,12 @@ protected:
     mutable std::shared_ptr<validated_syn::Cache> validated_syn_cache_;
     int depth_ = 0;
     int deduce_count_max_ = 10;
+    std::shared_ptr<RunCheckpoint> run_checkpoint_;
 
 public:
-    Category(const std::string& cat_root, const std::string& ckpt_name, SSFlag flag, bool log = true, bool loadD2 = false);
+    Category(const std::string& cat_root, const std::string& ckpt_name, SSFlag flag, bool log = true, bool loadD2 = false, bool recovering = false);
+    SSRet CheckpointStep(const std::string& key, const std::function<SSRet()>& operation);
+    std::shared_ptr<RunCheckpoint> EnableCheckpoints(const std::string& root,const std::string& kind,const json& options,double seconds,bool resume);
     void VersionConvertReorderRels()
     {
         for (auto& ring : rings_)

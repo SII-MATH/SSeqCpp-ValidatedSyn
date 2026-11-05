@@ -22,6 +22,13 @@ The official database is read only by the comparison step. The native engine
 starts from raw inputs with every synthetic rule off; new rules are enabled
 only after the ordinary event stream matches the published prefix.
 
+The native `auto` and `synthetic` commands now publish committed log counts
+every 30 seconds and save a recovery checkpoint every five minutes and at
+iteration boundaries. Saving waits for the next outer degree boundary;
+unfinished contradiction trials are never saved. After an interruption, use
+the same runner invocation with `--resume`. The runner rechecks the ordinary
+prefix before continuing new rules. Details are in the [rerun guide](docs/validated-syn/rerun.md).
+
 The data preparation command rejects computed SS states and imports neither historical logs nor computed cofiber tables. The original Adams E2/d2/map data, constructor factors and the three original manual reset inputs are retained initial assumptions. `status.json` reports progress; `acceptance.json` reports actual per-target results. The eight negative targets require fresh contradiction trials. Passing the program does not discharge the formal model and comparison obligations.
 
 ---
