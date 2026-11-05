@@ -13,6 +13,13 @@ iteration and rule arguments alive across mutations. The three existing
 manual reset inputs now also produce explicit `M` records, as in the
 published log; the mathematical initial inputs have not changed.
 
+The old version was reproduced under AddressSanitizer. It reported
+`heap-use-after-free` in `Category::DeduceDiffBySynthetic`, at the loop's
+read of `sc.levels.size()` (old `deduce.cpp:260`). The freeing allocation
+was `std::vector<Staircase>::_M_default_append`: a propagated conclusion
+resized the containing staircase array. This confirms the dangling
+reference rather than merely inferring it from the original SIGSEGV.
+
 A full standalone scan on a private copy of this run's saved checkpoint
 completed with exit code 0 after this change (258.69 seconds). This is a
 crash regression, not the required fresh staged rerun or a 201-target pass.

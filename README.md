@@ -5,6 +5,7 @@ Experimental fork of [WayneLin92/SSeqCpp](https://github.com/WayneLin92/SSeqCpp)
 - [Project scope and evidence boundary](docs/validated-syn/README.md)
 - [Fixed 201 targets](validation/targets.json)
 - [Cache boundaries and performance findings](docs/validated-syn/performance.md)
+- [Crash fix and ordinary-prefix-first rerun](docs/validated-syn/rerun.md)
 - `SynCs` and `SynCsIn` are disabled; old `GetSynImage` is disabled.
 - The current first implementation covers finite zigzags, selective middle elimination, source finite lifts, and source/target early-d2 corrections. Other sufficient-condition families remain to be implemented if needed. A partial run is never reported as a pass.
 
@@ -14,8 +15,12 @@ Build and start a fresh run:
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DFMT_TEST=OFF -DBUILD_TESTING=OFF
 cmake --build build --target ss -j 4
 python3 validation/prepare.py /path/to/original-E2-map-seed .runs/cw49
-python3 validation/run.py .runs/cw49
+python3 validation/run.py .runs/cw49 --official-log /path/to/official-proofs.db
 ```
+
+The official database is read only by the comparison step. The native engine
+starts from raw inputs with every synthetic rule off; new rules are enabled
+only after the ordinary event stream matches the published prefix.
 
 The data preparation command rejects computed SS states and imports neither historical logs nor computed cofiber tables. The original Adams E2/d2/map data, constructor factors and the three original manual reset inputs are retained initial assumptions. `status.json` reports progress; `acceptance.json` reports actual per-target results. The eight negative targets require fresh contradiction trials. Passing the program does not discharge the formal model and comparison obligations.
 
