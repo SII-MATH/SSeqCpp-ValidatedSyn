@@ -122,12 +122,17 @@ additional mathematical events with `post_flags=validated_syn`; repeating
 that same configuration is therefore not an effective next step. The three
 remaining requirements are survival through pages 16, 14 and 6, respectively.
 
-`--post-flags pullback` or `--post-flags zero` can enable the original
+`--post-flags pullback`, `--post-flags zero`, or `--post-flags dxy` can enable the original
 program's stronger ordinary contradiction search after the prefix gate.
 These options never change the initial ordinary calculation. The separate
 synthetic scan still uses only the validated sufficient-condition rules;
 SynCs and SynCsIn remain disabled. They are general searches over the full
 configured range, not rules selected from the acceptance targets.
+
+The historical record for the next missing step of T026 uses `XY`, the
+ordinary Leibniz rule with an uncertain input differential. That search
+is selected by `dxy`; its absence is a separate issue from the unimplemented
+sufficient-condition families in the synthetic producer.
 
 ```sh
 python validation/run.py EXISTING_RUN_DIRECTORY --resume --rounds 12 \

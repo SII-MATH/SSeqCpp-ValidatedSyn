@@ -151,6 +151,11 @@ if a[0]=='deduce' and (d/'recovery.sqlite3').exists():
         self.assertFalse(any(v.startswith('flags=') for v in commands[1]))
         self.assertIn('flags=pullback',commands[3])
 
+    def test_uncertain_differential_leibniz_search_stays_after_prefix_gate(self):
+        directory,commands=self.controller(False,post_flags='dxy')
+        self.assertFalse(any(v.startswith('flags=') for v in commands[1]))
+        self.assertIn('flags=dxy',commands[3])
+
 
 if __name__ == '__main__':
     unittest.main()

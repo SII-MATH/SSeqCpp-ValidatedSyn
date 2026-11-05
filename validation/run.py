@@ -70,8 +70,8 @@ def run(binary, directory, rounds, stem_max, *, official_log=None,
               'source_commit': subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()})
     status['checkpoint_seconds']=checkpoint_seconds
     post_flags=status.get('post_flags','validated_syn') if post_flags is None else post_flags
-    if not post_flags or any(x not in ('validated_syn','zero','pullback') for x in post_flags.split(',')):
-        raise ValueError('Only validated_syn, zero and pullback are allowed after prefix validation')
+    if not post_flags or any(x not in ('validated_syn','zero','pullback','dxy') for x in post_flags.split(',')):
+        raise ValueError('Only validated_syn, zero, pullback and dxy are allowed after prefix validation')
     status['post_flags']=post_flags
 
     def skip(name):
@@ -220,7 +220,7 @@ if __name__ == '__main__':
     parser.add_argument('--resume',action='store_true')
     parser.add_argument('--checkpoint-seconds',type=float,default=300)
     parser.add_argument('--post-flags',default=None,
-                        help='Post-prefix ordinary search flags: validated_syn, zero, pullback')
+                        help='Post-prefix ordinary search flags: validated_syn, zero, pullback, dxy')
     args = parser.parse_args()
     run(args.binary, args.directory, args.rounds, args.stem_max, official_log=args.official_log,
         resume=args.resume,checkpoint_seconds=args.checkpoint_seconds,post_flags=args.post_flags)
