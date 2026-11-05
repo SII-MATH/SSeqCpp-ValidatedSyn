@@ -142,3 +142,62 @@ python validation/run.py EXISTING_RUN_DIRECTORY --resume --rounds 12 \
 The existing ordinary prefix is rechecked, completed commands are skipped,
 and only the new rounds are run. The configured post-prefix flags are saved
 in `status.json` and reused on later resumes unless explicitly changed.
+
+### Completed 201-target continuation
+
+The staged fresh calculation passed **201/201**, with no verifier errors and
+**zero** `Syn`, `SynCs` or `SynCsIn` outputs. The immutable target file has
+SHA-256 `8c5af390415fc9250d0289bf6ca40a90d95177bf30c4e1d552c3914bbdef2299`.
+The ordinary prefix still matches all **2,406,018** reference mathematical
+events, including proof descriptions.
+
+The initial ten post-prefix rounds with `post_flags=validated_syn` stopped
+at 198/201. Repeating their unchanged configuration produced no new facts.
+Enabling the original ordinary `dxy` search gave 200/201 after its first
+round and 201/201 after its second round. The successful continuation used
+only `post_flags=dxy`; the validated synthetic scan ran separately between
+rounds. The completed run is `.runs/cw49-dxy-continuation-20261106`, whose
+`status.json`, `ordinary-comparison.json` and `acceptance.json` contain the
+local results and provenance.
+
+This continuation started from the staged fresh run's own completed
+`validated-011` state and its matching own proof-log boundary. The native
+computation uses its own E2/maps and saved calculation state. Historical SS
+states and historical inference records are never loaded. The historical
+log is used only by the separate prefix comparison. The 201 predicates are
+used only by the separate verifier, including its rollback-only negative
+checks; they are not inference inputs.
+
+The three previously missing survival conditions were recovered as follows:
+
+| Target | Object and `(s,t)` | New ordinary steps | Required page |
+| --- | --- | --- | --- |
+| T026 | S0 `(3,130)` | `d_7[0]=0` by uncertain-differential Leibniz, followed by naturality and ordinary propagation | 14 |
+| T049 | S0 `(8,130)` | `d_5[0]=0` | 6 |
+| T010 | Cnu `(9,135)` | `d_5[1]=d_6[1]=d_7[1]=0`, followed by degree-gap propagation | 16 |
+
+Thus the earlier shortfall was a search-configuration issue. After `dxy`
+was enabled, another propagation round was also needed. The passing run
+retains the same finite sufficient-condition implementation; it establishes
+the requested 201-target computational acceptance, rather than completeness
+of every certified synthetic theorem family.
+
+The equivalent staged schedule is:
+
+```sh
+python validation/run.py NEW_RUN_DIRECTORY --rounds 10 \
+  --binary FIXED_BINARY --official-log OFFICIAL_PROOFS_DB
+python validation/run.py NEW_RUN_DIRECTORY --resume --rounds 12 \
+  --post-flags dxy --binary FIXED_BINARY --official-log OFFICIAL_PROOFS_DB
+```
+
+An additional diagnostic examined a different historical route to T010.
+At `CW_2_A_eta (s,t)=(11,145)`, assuming `d_3[6]=0` forces next-page
+choices. Both `d_4[6]=0` and `d_4[6]=[0]` contradict known information
+(historical records 2528669--2528671). A rollback-only native probe on this
+run's saved state returned `ordinary_contradiction=0` and
+`expanded_zero_contradiction=1`, confirming that the original `zero` search
+can exclude that assumption. This probe inserted no production conclusion
+or exclusion. The completed 201/201 continuation used `dxy` without `zero`
+or `pullback`; those alternative diagnostic calculations were stopped once
+the successful verification was available, retaining their recovery states.

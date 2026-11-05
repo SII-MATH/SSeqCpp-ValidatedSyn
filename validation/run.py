@@ -198,8 +198,11 @@ def run(binary, directory, rounds, stem_max, *, official_log=None,
             save(phase='failed', command='verify', exit_code=verify_code)
             raise RuntimeError('Verification did not produce a result')
         acceptance = json.loads(acceptance_file.read_text())
+        with sqlite3.connect((directory/'log.db').as_uri()+'?mode=ro',uri=True) as db:
+            verified_log_rows=db.execute('SELECT count(*) FROM log').fetchone()[0]
         save(passed=acceptance['passed'], missing=acceptance['missing'],
-             forbidden_outputs=acceptance['forbidden_outputs'],last_completed_command=verify_name)
+             forbidden_outputs=acceptance['forbidden_outputs'],last_completed_command=verify_name,
+             saved_log_rows=verified_log_rows)
         if acceptance['forbidden_outputs']:
             save(phase='failed')
             raise RuntimeError('Forbidden synthetic output detected')
