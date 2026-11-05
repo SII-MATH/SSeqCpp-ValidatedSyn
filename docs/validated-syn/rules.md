@@ -98,3 +98,23 @@ The current native tests exercise complete kernels, affine consistency,
 the d3 kernel modulo the full d2 image, unknown/range rejection, the 9000
 boundary cutoff, and both disabled synthetic entry routes. They do not
 constitute a full independent mathematical audit of this implementation.
+
+## Cache boundaries
+
+Fixed E2 map columns are cached per Category (at most 65536 columns).
+These maps depend only on the fixed E2 bases, relations and map data, not
+on SS deductions or trial assumptions. Their linear extension is compared
+against the direct native evaluator on real basis vectors and sums.
+
+Staircase rank, d2, the d3 quotient kernel, cycle/boundary spaces and
+differential graphs are memoized only inside one read-only State frame.
+The frame ends before a candidate conclusion is committed. A later call,
+including one after AddNode/PopNode, always builds a new frame. Thus trial
+knowledge cannot survive rollback through these caches. Gaussian basis
+factorizations are reused for multiple right-hand sides without changing
+their solution or missing-data checks.
+
+`SS_VALIDATED_CACHE=off` selects the uncached reference path.
+`SS_VALIDATED_CACHE_STATS=1` prints counts and the time spent in rule frames
+once the Category is destroyed. This measures the rule layer; it is not
+an estimate of the speedup of the entire ordinary search.

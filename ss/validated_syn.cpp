@@ -1,8 +1,34 @@
 #include "validated_syn.h"
 #include <map>
+#include <chrono>
+#include <cstdlib>
+#include <iostream>
+#include <tuple>
 #include <optional>
 #include <stdexcept>
 
+namespace validated_syn {
+struct Cache {
+    using MapKey=std::tuple<size_t,int,int,int>;
+    bool enabled=!(std::getenv("SS_VALIDATED_CACHE") && std::string(std::getenv("SS_VALIDATED_CACHE"))=="off");
+    std::map<MapKey,int1d> map_columns;
+    uint64_t map_hits=0,map_evaluations=0,memo_hits=0,memo_evaluations=0,
+             rank_hits=0,rank_evaluations=0,evictions=0,frames=0;
+    double rule_seconds=0;
+    ~Cache() {
+        if (std::getenv("SS_VALIDATED_CACHE_STATS"))
+            std::cerr << "VALIDATED_CACHE " << json({{"enabled",enabled},{"map_hits",map_hits},
+                {"map_evaluations",map_evaluations},{"memo_hits",memo_hits},
+                {"memo_evaluations",memo_evaluations},{"rank_hits",rank_hits},
+                {"rank_evaluations",rank_evaluations},{"map_cache_entries",map_columns.size()},
+                {"evictions",evictions},{"frames",frames},{"rule_seconds",rule_seconds}}).dump() << '\n';
+    }
+};
+}
+validated_syn::Cache& Category::GetValidatedSynCache() const {
+    if (!validated_syn_cache_) validated_syn_cache_=std::make_shared<validated_syn::Cache>();
+    return *validated_syn_cache_;
+}
 namespace validated_syn {
 namespace {
 using Space = int2d;
@@ -67,7 +93,31 @@ int1d triple(const int1d& a, const int1d& b, const int1d& c) {
 }
 
 struct State {
+    using Key=std::tuple<uint32_t,size_t,int,int,int>;
+    struct Graph { Space domain, images; };
     Category& cat;
+    Cache& cache;
+    std::chrono::steady_clock::time_point started=std::chrono::steady_clock::now();
+    mutable std::set<Key> checked_staircases;
+    mutable std::map<Key,std::optional<Space>> d2_memo,z4_memo;
+    mutable std::map<Key,Space> boundary_memo,upper_memo,lower_memo,permanent_memo,boundary_upper_memo;
+    mutable std::map<Key,bool> e3_memo;
+    mutable std::map<Key,Graph> graph_memo;
+    explicit State(Category& value):cat(value),cache(value.GetValidatedSynCache()) {++cache.frames;}
+    ~State() {cache.rule_seconds+=std::chrono::duration<double>(std::chrono::steady_clock::now()-started).count();}
+    static Key key(IndexUniv object,AdamsDeg d,int parameter=0) {
+        return {object.type,object.index,d.s,d.t,parameter};
+    }
+    template<class T,class Compute> T memo(std::map<Key,T>& table,Key k,Compute compute) const {
+        if (cache.enabled) {
+            auto found=table.find(k);
+            if (found!=table.end()) {++cache.memo_hits;return found->second;}
+        }
+        ++cache.memo_evaluations;
+        auto result=compute();
+        if (cache.enabled) table.emplace(k,result);
+        return result;
+    }
     int dimension(IndexUniv object, AdamsDeg d) const {
         if (d.s < 0 || d.t < d.s) return 0;
         if (d.t > cat.GetTMax(object)) throw Missing("outside E2 range");
@@ -84,16 +134,39 @@ struct State {
         const auto& ss = cat.GetNodesSS(object);
         if (!ss.front().has(d)) throw Missing("missing nonempty staircase");
         const auto& sc = ss.GetRecentSc(d);
-        if (sc.basis.size() != size_t(n) || lina::GetSpace(sc.basis).size() != size_t(n))
-            throw Missing("incomplete staircase");
+        if (sc.basis.size()!=size_t(n)) throw Missing("incomplete staircase");
+        auto k=key(object,d);
+        if (cache.enabled && checked_staircases.count(k)) ++cache.rank_hits;
+        else {
+            ++cache.rank_evaluations;
+            if (lina::GetSpace(sc.basis).size()!=size_t(n)) throw Missing("incomplete staircase");
+            if (cache.enabled) checked_staircases.insert(k);
+        }
         return sc;
     }
     int1d map(size_t ordinal, AdamsDeg d, const int1d& v) const {
         auto& f = cat.GetMaps()[ordinal];
-        dimension(f->from, d); dimension(f->to, d + f->deg);
-        if (d.t > f->t_max) throw Missing("outside map range");
+        int source_size=dimension(f->from,d);
+        dimension(f->to,d+f->deg);
+        if (d.t>f->t_max) throw Missing("outside map range");
         if (v.empty()) return {};
-        return f->map(v, d, cat);
+        if (v.front()<0 || v.back()>=source_size) throw Missing("invalid map source coordinate");
+        if (!cache.enabled) {++cache.map_evaluations;return f->map(v,d,cat);}
+        int1d result;
+        for (int i:v) {
+            Cache::MapKey k{ordinal,d.s,d.t,i};
+            auto found=cache.map_columns.find(k);
+            if (found==cache.map_columns.end()) {
+                // Fixed E2 maps are linear and unchanged by trials/rollback.
+                // Bound retained columns without discarding any SS knowledge.
+                if (cache.map_columns.size()>=65536) {cache.map_columns.clear();++cache.evictions;}
+                auto column=f->map({i},d,cat);
+                ++cache.map_evaluations;
+                found=cache.map_columns.emplace(k,std::move(column)).first;
+            } else ++cache.map_hits;
+            result=lina::add(result,found->second);
+        }
+        return result;
     }
     Space map_space(size_t ordinal, AdamsDeg d, const Space& p) const {
         Space result;
@@ -101,6 +174,9 @@ struct State {
         return result;
     }
     Space boundaries(IndexUniv object, AdamsDeg d, int before) const {
+        return memo(boundary_memo,key(object,d,before),[&]{return boundaries_uncached(object,d,before);});
+    }
+    Space boundaries_uncached(IndexUniv object, AdamsDeg d, int before) const {
         const auto& sc = staircase(object, d);
         Space result;
         for (size_t i = 0; i < sc.basis.size(); ++i)
@@ -109,6 +185,9 @@ struct State {
     }
     // Full E2 d2 matrix, only when every column is actually known.
     std::optional<Space> d2(IndexUniv object, AdamsDeg d) const {
+        return memo(d2_memo,key(object,d),[&]{return d2_uncached(object,d);});
+    }
+    std::optional<Space> d2_uncached(IndexUniv object, AdamsDeg d) const {
         const auto& sc = staircase(object, d);
         Space values;
         for (size_t i = 0; i < sc.basis.size(); ++i) {
@@ -118,24 +197,31 @@ struct State {
             values.push_back(sc.levels[i] == LEVEL_MAX - 2 ? sc.diffs[i] : int1d{});
         }
         Space result;
+        Space basis_image,basis_kernel,basis_inverse;
+        lina::SetLinearMap(sc.basis,basis_image,basis_kernel,basis_inverse);
         for (auto& e : identity(sc.basis.size())) {
-            auto coefficients = solve(sc.basis, e);
-            if (!coefficients) throw Missing("noninvertible E2 basis");
-            result.push_back(linear_apply(values, *coefficients));
+            if (!lina::Residue(basis_image,e).empty()) throw Missing("noninvertible E2 basis");
+            auto coefficients=lina::GetImage(basis_image,basis_inverse,e);
+            result.push_back(linear_apply(values,coefficients));
         }
         return result;
     }
     std::optional<Space> z4(IndexUniv object, AdamsDeg d) const {
+        return memo(z4_memo,key(object,d),[&]{return z4_uncached(object,d);});
+    }
+    std::optional<Space> z4_uncached(IndexUniv object, AdamsDeg d) const {
         auto out=d2(object,d), incoming=d2(object,d+AdamsDeg(1,1));
         if (!out || !incoming) return std::nullopt;
         auto cycles=kernel(*out);
         const auto& sc=staircase(object,d);
         Space images;
+        Space basis_image,basis_kernel,basis_inverse;
+        lina::SetLinearMap(sc.basis,basis_image,basis_kernel,basis_inverse);
         for (auto& cycle:cycles) {
-            auto coefficients=solve(sc.basis,cycle);
-            if (!coefficients) throw Missing("cycle outside complete E2 basis");
+            if (!lina::Residue(basis_image,cycle).empty()) throw Missing("cycle outside complete E2 basis");
+            auto coefficients=lina::GetImage(basis_image,basis_inverse,cycle);
             int1d image;
-            for (int i:*coefficients) {
+            for (int i:coefficients) {
                 if (sc.levels[i]>=LEVEL_MAX-2 ||
                     (sc.levels[i]==LEVEL_MAX-3 && sc.diffs[i]==NULL_DIFF)) return std::nullopt;
                 if (sc.levels[i]==LEVEL_MAX-3) image=lina::add(image,sc.diffs[i]);
@@ -154,6 +240,9 @@ struct State {
     }
     // Upper bounds only use complete matrices; unknown columns enlarge them.
     Space cycle_upper(IndexUniv object, AdamsDeg d, int page=3) const {
+        return memo(upper_memo,key(object,d,page),[&]{return cycle_upper_uncached(object,d,page);});
+    }
+    Space cycle_upper_uncached(IndexUniv object, AdamsDeg d, int page) const {
         if (page>=4) {
             auto cycles=z4(object,d);
             if (cycles) return *cycles;
@@ -162,12 +251,18 @@ struct State {
         return matrix ? kernel(*matrix) : identity(dimension(object, d));
     }
     bool e3_zero(IndexUniv object, AdamsDeg d) const {
+        return memo(e3_memo,key(object,d),[&]{return e3_zero_uncached(object,d);});
+    }
+    bool e3_zero_uncached(IndexUniv object, AdamsDeg d) const {
         if (!dimension(object, d)) return true;
         auto out = d2(object, d), in = d2(object, d - AdamsDeg(2, 1));
         if (!out || !in) return false;
         return contained(kernel(*out), *in);
     }
     Space cycle_lower(IndexUniv object, AdamsDeg d, int page) const {
+        return memo(lower_memo,key(object,d,page),[&]{return cycle_lower_uncached(object,d,page);});
+    }
+    Space cycle_lower_uncached(IndexUniv object, AdamsDeg d, int page) const {
         const auto& sc = staircase(object, d);
         Space result;
         for (size_t i = 0; i < sc.basis.size(); ++i)
@@ -197,6 +292,9 @@ struct State {
     // criterion also checks that removed outgoing targets cannot be earlier
     // boundaries; an outgoing row alone is not sufficient to remove a direction.
     Space permanent_upper(IndexUniv object, AdamsDeg d) const {
+        return memo(permanent_memo,key(object,d),[&]{return permanent_upper_uncached(object,d);});
+    }
+    Space permanent_upper_uncached(IndexUniv object, AdamsDeg d) const {
         const auto& sc = staircase(object, d);
         if (sc.basis.empty()) return {};
         const auto& nodes = cat.GetNodesSS(object);
@@ -216,8 +314,10 @@ struct State {
         auto upper = cycle_upper(object, d,4);
         return intersection(prefix,upper);
     }
-    struct Graph { Space domain, images; };
     Graph differential(IndexUniv object, AdamsDeg d, int page) const {
+        return memo(graph_memo,key(object,d,page),[&]{return differential_uncached(object,d,page);});
+    }
+    Graph differential_uncached(IndexUniv object, AdamsDeg d, int page) const {
         const auto& sc = staircase(object, d);
         Graph graph;
         for (size_t i = 0; i < sc.basis.size(); ++i) {
@@ -230,6 +330,9 @@ struct State {
         return graph;
     }
     Space boundary_upper(IndexUniv object, AdamsDeg d, int before) const {
+        return memo(boundary_upper_memo,key(object,d,before),[&]{return boundary_upper_uncached(object,d,before);});
+    }
+    Space boundary_upper_uncached(IndexUniv object, AdamsDeg d, int before) const {
         int n=dimension(object,d);
         if (!n) return {};
         auto result=boundaries(object,d,before);
@@ -238,12 +341,13 @@ struct State {
             if (source.s<0 || source.stem()<0) continue;
             auto upper=page==2 ? identity(dimension(object,source)) : cycle_upper(object,source,page);
             auto graph=differential(object,source,page);
+            Space domain_image,domain_kernel,domain_inverse;
+            lina::SetLinearMap(graph.domain,domain_image,domain_kernel,domain_inverse);
             // Without full source coverage the only safe target bound is E2.
-            if (!contained(upper,graph.domain)) return identity(n);
             for (auto& v:upper) {
-                auto coefficients=solve(graph.domain,v);
-                if (!coefficients) throw Missing("incomplete earlier differential domain");
-                result.push_back(linear_apply(graph.images,*coefficients));
+                if (!lina::Residue(domain_image,v).empty()) return identity(n);
+                auto coefficients=lina::GetImage(domain_image,domain_inverse,v);
+                result.push_back(linear_apply(graph.images,coefficients));
             }
         }
         return lina::GetSpace(result);

@@ -668,6 +668,8 @@ struct ALeibnize
     int1d a;
 };
 
+namespace validated_syn { struct Cache; }
+
 class Category
 {
 protected:
@@ -681,6 +683,7 @@ protected:
     nlohmann::json js_;
     std::vector<IndexUniv> deduce_list_spectra_;
     std::vector<size_t> deduce_list_cofseq_;
+    mutable std::shared_ptr<validated_syn::Cache> validated_syn_cache_;
     int depth_ = 0;
     int deduce_count_max_ = 10;
 
@@ -699,6 +702,8 @@ public:
     void LoadExclusions(int id_start, SSFlag flag);
 
 public: /* Getters */
+    validated_syn::Cache& GetValidatedSynCache() const;
+
     static auto GetRecentPiBasis(const PiBasis1d& nodes_pi_basis, AdamsDeg deg) -> const PiBase*;
     static auto GetRecentPiBasis(const PiBasisMod1d& nodes_pi_basis, AdamsDeg deg) -> const PiBaseMod*;
 

@@ -4,6 +4,7 @@ Experimental fork of [WayneLin92/SSeqCpp](https://github.com/WayneLin92/SSeqCpp)
 
 - [Project scope and evidence boundary](docs/validated-syn/README.md)
 - [Fixed 201 targets](validation/targets.json)
+- [Cache boundaries and performance findings](docs/validated-syn/performance.md)
 - `SynCs` and `SynCsIn` are disabled; old `GetSynImage` is disabled.
 - The current first implementation covers finite zigzags, selective middle elimination, source finite lifts, and source/target early-d2 corrections. Other sufficient-condition families remain to be implemented if needed. A partial run is never reported as a pass.
 
