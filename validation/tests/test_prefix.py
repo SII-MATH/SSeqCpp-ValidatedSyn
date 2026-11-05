@@ -69,7 +69,7 @@ class PrefixTests(unittest.TestCase):
         self.assertTrue(compare(self.current,self.reference,current_stop=3)['passed'])
         self.assertFalse(compare(self.current,self.reference)['passed'])
 
-    def controller(self, missing_manual, resume_after_ordinary=False, resume_mid_synthetic=False):
+    def controller(self, missing_manual, resume_after_ordinary=False, resume_mid_synthetic=False, post_flags=None):
         project=self.root/'project';project.mkdir();(project/'validation').mkdir()
         (project/'validation/targets.json').write_text('{}')
         directory=self.root/'run';directory.mkdir()
@@ -85,7 +85,7 @@ if a[0]=='reset':
   c.execute(SCHEMA)
   c.execute('INSERT INTO log VALUES(?,?,?,?,?,?,?,?,?,?)',(1,*FIRST))
   if not MISSING:c.execute('INSERT INTO log VALUES(?,?,?,?,?,?,?,?,?,?)',(2,*MANUAL))
-elif a[:2]==['deduce','auto'] and 'flags=validated_syn' not in a:
+elif a[:2]==['deduce','auto'] and not any(v.startswith('flags=') for v in a):
  with sqlite3.connect(d/'log.db') as c:c.execute('INSERT INTO log VALUES(?,?,?,?,?,?,?,?,?,?)',(3,*ORDINARY))
 elif a[0]=='verify':
  (d/'acceptance.json').write_text(json.dumps({'total':201,'passed':201,'missing':[],'errors':[],'forbidden_outputs':0}))
@@ -115,7 +115,7 @@ if a[0]=='deduce' and (d/'recovery.sqlite3').exists():
                 with self.assertRaisesRegex(RuntimeError,'new rules remain disabled'):
                     runner.run(binary,directory,1,261,official_log=self.reference)
             else:
-                runner.run(binary,directory,1,261,official_log=self.reference,resume=resume_after_ordinary)
+                runner.run(binary,directory,1,261,official_log=self.reference,resume=resume_after_ordinary,post_flags=post_flags)
         commands=[json.loads(line) for line in (directory/'commands').read_text().splitlines()]
         return directory,commands
 
@@ -145,6 +145,11 @@ if a[0]=='deduce' and (d/'recovery.sqlite3').exists():
         report=json.loads((directory/'ordinary-comparison.json').read_text())
         self.assertTrue(report['passed'])
         self.assertEqual(report['last_current_id'],3)
+
+    def test_stronger_ordinary_search_is_only_enabled_after_prefix_gate(self):
+        directory,commands=self.controller(False,post_flags='pullback')
+        self.assertFalse(any(v.startswith('flags=') for v in commands[1]))
+        self.assertIn('flags=pullback',commands[3])
 
 
 if __name__ == '__main__':

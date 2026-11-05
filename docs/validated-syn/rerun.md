@@ -114,3 +114,26 @@ python validation/run.py EXISTING_RUN_DIRECTORY --resume \
 checkpoint are visible, but are trimmed on recovery so that the proof log
 and the restored mathematical state stay consistent. The immutable 201
 targets are not inference inputs, including during a resumed calculation.
+
+## Stronger ordinary searches after the verified prefix
+
+The first staged calculation reached 198/201. Rounds 7--10 produced no
+additional mathematical events with `post_flags=validated_syn`; repeating
+that same configuration is therefore not an effective next step. The three
+remaining requirements are survival through pages 16, 14 and 6, respectively.
+
+`--post-flags pullback` or `--post-flags zero` can enable the original
+program's stronger ordinary contradiction search after the prefix gate.
+These options never change the initial ordinary calculation. The separate
+synthetic scan still uses only the validated sufficient-condition rules;
+SynCs and SynCsIn remain disabled. They are general searches over the full
+configured range, not rules selected from the acceptance targets.
+
+```sh
+python validation/run.py EXISTING_RUN_DIRECTORY --resume --rounds 12 \
+  --post-flags pullback --binary FIXED_BINARY --official-log OFFICIAL_PROOFS_DB
+```
+
+The existing ordinary prefix is rechecked, completed commands are skipped,
+and only the new rounds are run. The configured post-prefix flags are saved
+in `status.json` and reused on later resumes unless explicitly changed.

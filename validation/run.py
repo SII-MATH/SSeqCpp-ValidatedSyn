@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def run(binary, directory, rounds, stem_max, *, official_log=None,
-        completed=None, previous_status=None, resume=False, checkpoint_seconds=300):
+        completed=None, previous_status=None, resume=False, checkpoint_seconds=300, post_flags=None):
     resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
     binary, directory = Path(binary).resolve(), Path(directory).resolve()
     if official_log is None:
@@ -69,6 +69,10 @@ def run(binary, directory, rounds, stem_max, *, official_log=None,
               'targets_sha256': hashlib.sha256((ROOT/'validation/targets.json').read_bytes()).hexdigest(),
               'source_commit': subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()})
     status['checkpoint_seconds']=checkpoint_seconds
+    post_flags=status.get('post_flags','validated_syn') if post_flags is None else post_flags
+    if not post_flags or any(x not in ('validated_syn','zero','pullback') for x in post_flags.split(',')):
+        raise ValueError('Only validated_syn, zero and pullback are allowed after prefix validation')
+    status['post_flags']=post_flags
 
     def skip(name):
         nonlocal skipping
@@ -179,7 +183,7 @@ def run(binary, directory, rounds, stem_max, *, official_log=None,
         # The first enabling point is strictly after a successful comparison.
         command(['deduce', 'synthetic', str(directory)], f'validated-{number:03d}')
         command(['deduce', 'auto', str(directory), 'stem_min=0', f'stem_max={stem_max}',
-                 'num=1', 'flags=validated_syn'], f'round-{number:03d}')
+                 'num=1', 'flags='+post_flags], f'round-{number:03d}')
         verify_name=f'verify-{number:03d}'
         if skip(verify_name):continue
         acceptance_file = directory / 'acceptance.json'
@@ -215,6 +219,8 @@ if __name__ == '__main__':
                         help='Read only by the comparison; never passed to the native engine')
     parser.add_argument('--resume',action='store_true')
     parser.add_argument('--checkpoint-seconds',type=float,default=300)
+    parser.add_argument('--post-flags',default=None,
+                        help='Post-prefix ordinary search flags: validated_syn, zero, pullback')
     args = parser.parse_args()
     run(args.binary, args.directory, args.rounds, args.stem_max, official_log=args.official_log,
-        resume=args.resume,checkpoint_seconds=args.checkpoint_seconds)
+        resume=args.resume,checkpoint_seconds=args.checkpoint_seconds,post_flags=args.post_flags)
