@@ -52,7 +52,7 @@ def states(directory,config):
     return result
 
 
-def main(seed,reference):
+def main(seed,reference,unit_only=False):
     resource.setrlimit(resource.RLIMIT_CORE,(0,0))
     binary=ROOT/'build/bin/ss'
     backend=sorted((ROOT/'build/ss/CMakeFiles/ss.dir').glob('*.cpp.o'))
@@ -65,15 +65,19 @@ def main(seed,reference):
                     str(ROOT/'build/thirdparty/sqlite3/libsqlite3.a'),'-lpthread','-ldl','-o',str(executable)],check=True)
     with tempfile.TemporaryDirectory(prefix='ss-periodic-regression-') as tmp:
         tmp=Path(tmp);baseline=tmp/'baseline';resumed=tmp/'resumed';unit=tmp/'unit'
-        config=fixture(seed,baseline);fixture(seed,resumed);fixture(seed,unit)
+        fixture(seed,unit)
+        if not unit_only:config=fixture(seed,baseline);fixture(seed,resumed)
         def run(exe,args,path):
             with (tmp/(path.name+'-output.txt')).open('a') as out:
                 result=subprocess.run([str(exe),*args],cwd=tmp,stdout=out,stderr=subprocess.STDOUT,timeout=180)
             if result.returncode:
                 print((tmp/(path.name+'-output.txt')).read_text(errors='replace')[-6000:],flush=True)
                 result.check_returncode()
-        for path in (baseline,resumed,unit):run(reference,['reset',str(path),'confirm=1'],path)
+        for path in ((unit,) if unit_only else (baseline,resumed,unit)):run(reference,['reset',str(path),'confirm=1'],path)
         run(executable,[str(unit)],unit)
+        if unit_only:
+            print('PASS: unpublished first checkpoint, exact state/cache restore, failed-write rollback and trial refusal',flush=True)
+            return
         options=['stem_min=0','stem_max=45','num=3']
         run(reference,['deduce','auto',str(baseline),*options],baseline)
         for case in ('degree','round','final'):
@@ -138,4 +142,5 @@ def main(seed,reference):
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('seed',type=Path);parser.add_argument('--reference',type=Path,required=True)
-    args=parser.parse_args();main(args.seed.resolve(),args.reference.resolve())
+    parser.add_argument('--unit-only',action='store_true')
+    args=parser.parse_args();main(args.seed.resolve(),args.reference.resolve(),args.unit_only)

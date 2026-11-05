@@ -41,6 +41,8 @@ def run(binary, directory, rounds, stem_max, *, official_log=None,
     target_hash=hashlib.sha256((ROOT/'validation/targets.json').read_bytes()).hexdigest()
     boundary=status.get('last_completed_command') if resume else None
     recover_command=status.get('command') if resume else None
+    prior_command_start=status.get('command_log_start') if resume else None
+    had_verified_prefix=resume and status.get('ordinary_comparison',{}).get('passed') is True
     if resume:
         if status.get('historical_log_imported') is not False or status.get('targets_sha256')!=target_hash or not boundary:
             raise ValueError('Resume requires this fresh run, unchanged targets and a completed command boundary')
@@ -108,13 +110,22 @@ def run(binary, directory, rounds, stem_max, *, official_log=None,
                         if previous.get(field):restore += [field+'='+','.join(previous[field])]
                 env=os.environ|{'SS_RUN_COMMAND':metadata['command']}
                 subprocess.run([str(binary),*restore],cwd=ROOT,env=env,stdout=subprocess.DEVNULL,check=True)
+            elif metadata is None and resume and name==recover_command and prior_command_start is not None:
+                # No state checkpoint was published by this command yet.
+                with sqlite3.connect(directory/'log.db') as db:
+                    db.execute('DELETE FROM exclusions WHERE id>?',(prior_command_start,))
+                    db.execute('DELETE FROM log WHERE id>?',(prior_command_start,))
+        command_start=None
+        if (directory/'log.db').exists():
+            with sqlite3.connect(directory/'log.db') as db:
+                command_start=db.execute('SELECT max(id) FROM log').fetchone()[0]
         tail = deque(maxlen=80)
         proc = subprocess.Popen([str(binary), *arguments], cwd=ROOT,
                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                 text=True, errors='replace',env=os.environ|{'SS_RUN_COMMAND':name,
                                 'SS_BINARY_SHA256':status['binary_sha256'],'SS_SOURCE_COMMIT':status['source_commit']})
         save(command=name, child_pid=proc.pid, terminal_lines=0,
-             last_progress='', command_started=time.time())
+             last_progress='', command_started=time.time(),command_log_start=command_start)
         updated, lines = time.monotonic(), 0
         for line in proc.stdout:
             tail.append(line)
@@ -151,7 +162,7 @@ def run(binary, directory, rounds, stem_max, *, official_log=None,
     save(phase='comparing-prefix')
     report=directory/'ordinary-comparison.json'
     stop=None
-    if skipping:
+    if skipping or had_verified_prefix:
         old=json.loads(report.read_text())
         if not old.get('passed'):raise ValueError('No successful ordinary-prefix comparison to resume')
         stop=old['last_current_id']

@@ -15,6 +15,7 @@ int main(int argc,char** argv) {
     Logger::SetOutDeduce((root+"/log.db").c_str());
     const auto flags=SSFlag::cofseq;
     Category cat(root,"",flags,false);
+    {myio::Database unpublished(root+"/recovery.sqlite3");}
     auto cp=cat.EnableCheckpoints(root,"unit",json::object(),1e-9,false);
     auto object=cat.GetIndexCwByName("S0");auto d=AdamsDeg(9,132);
     auto& nodes=cat.GetNodesSS(object);

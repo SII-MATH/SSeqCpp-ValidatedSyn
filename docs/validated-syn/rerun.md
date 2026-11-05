@@ -94,8 +94,10 @@ the same ordered mathematical events (including proof text) and final
 SS/cofiber rows as the uninterrupted pre-checkpoint binary `64bc97c`.
 Separate native tests check exact layer/flag/cache serialization, log-tail
 truncation, rollback after a failed checkpoint write, and rejection of trial
-state saves. Nine controller/comparison tests cover the prefix gate and
-resuming after a normally saved ordinary command.
+state saves, including a first checkpoint that was never published. Ten
+controller/comparison tests cover the prefix gate, resuming after a normally
+saved ordinary command, and resuming the first synthetic command after its
+log has advanced beyond the already verified ordinary prefix.
 
 ```sh
 python validation/test_checkpoints.py RAW_E2_DIRECTORY --reference PREVIOUS_FIXED_SS_BINARY

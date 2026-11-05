@@ -69,7 +69,7 @@ class PrefixTests(unittest.TestCase):
         self.assertTrue(compare(self.current,self.reference,current_stop=3)['passed'])
         self.assertFalse(compare(self.current,self.reference)['passed'])
 
-    def controller(self, missing_manual, resume_after_ordinary=False):
+    def controller(self, missing_manual, resume_after_ordinary=False, resume_mid_synthetic=False):
         project=self.root/'project';project.mkdir();(project/'validation').mkdir()
         (project/'validation/targets.json').write_text('{}')
         directory=self.root/'run';directory.mkdir()
@@ -89,13 +89,27 @@ elif a[:2]==['deduce','auto'] and 'flags=validated_syn' not in a:
  with sqlite3.connect(d/'log.db') as c:c.execute('INSERT INTO log VALUES(?,?,?,?,?,?,?,?,?,?)',(3,*ORDINARY))
 elif a[0]=='verify':
  (d/'acceptance.json').write_text(json.dumps({'total':201,'passed':201,'missing':[],'errors':[],'forbidden_outputs':0}))
+if a[0]=='deduce' and (d/'recovery.sqlite3').exists():
+ with sqlite3.connect(d/'recovery.sqlite3') as c:
+  v=json.loads(c.execute('SELECT value FROM metadata WHERE id=1').fetchone()[0]);v['complete']=True
+  c.execute('UPDATE metadata SET value=? WHERE id=1',(json.dumps(v),))
 '''.replace('if a[0]==\'reset\':',f'SCHEMA={SCHEMA!r}\nFIRST={FIRST!r}\nMANUAL={MANUAL!r}\nORDINARY={ORDINARY!r}\nMISSING={missing_manual!r}\nif a[0]==\'reset\':'))
         binary.chmod(0o755)
         if resume_after_ordinary:
             database(directory/'log.db',[(1,*FIRST),(2,*MANUAL),(3,*ORDINARY)])
-            (directory/'status.json').write_text(json.dumps({'phase':'ordinary-complete',
+            status={'phase':'ordinary-complete',
                 'historical_log_imported':False,'last_completed_command':'ordinary','command':'ordinary',
-                'targets_sha256':hashlib.sha256(b'{}').hexdigest(),'runner_pid':0}))
+                'targets_sha256':hashlib.sha256(b'{}').hexdigest(),'runner_pid':0}
+            if resume_mid_synthetic:
+                with sqlite3.connect(directory/'log.db') as db:
+                    db.execute('INSERT INTO log VALUES(?,?,?,?,?,?,?,?,?,?)',(4,SYN[0],'SynValidated',*SYN[2:]))
+                report=compare(directory/'log.db',self.reference,current_stop=3)
+                (directory/'ordinary-comparison.json').write_text(json.dumps(report))
+                status.update(command='validated-001',new_rules_enabled=True,ordinary_comparison={'passed':True})
+                with sqlite3.connect(directory/'recovery.sqlite3') as db:
+                    db.execute('CREATE TABLE metadata(id INTEGER PRIMARY KEY,value TEXT)')
+                    db.execute('INSERT INTO metadata VALUES(1,?)',(json.dumps({'command':'validated-001','complete':False}),))
+            (directory/'status.json').write_text(json.dumps(status))
         with patch.object(runner,'ROOT',project):
             if missing_manual:
                 with self.assertRaisesRegex(RuntimeError,'new rules remain disabled'):
@@ -124,6 +138,13 @@ elif a[0]=='verify':
         self.assertEqual([x[:2] for x in commands[:2]],[['deduce','synthetic'],['deduce','auto']])
         self.assertEqual([x[0] for x in commands],['deduce','deduce','verify'])
         self.assertTrue(json.loads((directory/'ordinary-comparison.json').read_text())['passed'])
+
+    def test_resume_first_synthetic_command_revalidates_the_saved_prefix(self):
+        directory,commands=self.controller(False,True,True)
+        self.assertIn('checkpoint_resume=1',commands[0])
+        report=json.loads((directory/'ordinary-comparison.json').read_text())
+        self.assertTrue(report['passed'])
+        self.assertEqual(report['last_current_id'],3)
 
 
 if __name__ == '__main__':

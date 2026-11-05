@@ -106,8 +106,12 @@ RunCheckpoint::RunCheckpoint(Category& category,std::string root,std::string kin
         first_round_=meta_.at("round").get<int>();
         seeking_=!meta_.value("cursor",std::string()).empty()&&!Complete();
     } else {
-        if(std::filesystem::exists(checkpoint_path(root_))&&!Metadata(root_).value("complete",false))
-            throw RunTimeError("Unfinished recovery exists; use checkpoint_resume=1");
+        if(std::filesystem::exists(checkpoint_path(root_))) {
+            myio::Database previous(checkpoint_path(root_));
+            // SQLite may leave an empty file if the very first save is killed.
+            if(previous.has_table("metadata")&&!Metadata(root_).value("complete",false))
+                throw RunTimeError("Unfinished recovery exists; use checkpoint_resume=1");
+        }
         meta_={{"version",1},{"kind",kind},{"options",options_},{"command",command_name()},
                {"config",raw_config(root_)},{"initial_inputs",read_file(root_+"/initial-inputs.sha256")},
                {"round",1},{"round_start",Logger::GetCheckpoint()},{"cursor",""},
