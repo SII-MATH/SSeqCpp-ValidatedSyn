@@ -293,10 +293,12 @@ int main_reset(int argc, char** argv, int& index, const char* desc)
         if (auto iCw = category.GetIndexCwByName("S0")) {
             auto& nodes_ss = category.GetRings()[iCw.index].nodes_ss;
             if (auto deg = AdamsDeg(25, 63 + 25); nodes_ss.front().has(deg)) {
+                Logger::LogDiff(0, EnumReason::manual, "S0", deg, 5, {1}, {0}, "", flag);
                 if (auto rt = category.SetCwDiffGlobal(iCw, deg, int1d{1}, int1d{0}, 5, false, flag))
                     return -127;
             }
             if (auto deg = AdamsDeg(56, 127 + 56); nodes_ss.front().has(deg)) {
+                Logger::LogDiff(0, EnumReason::manual, "S0", deg, 6, {1}, {0}, "", flag);
                 if (auto rt = category.SetCwDiffGlobal(iCw, deg, int1d{1}, int1d{0}, 6, false, flag))
                     return -253;
             }
@@ -304,6 +306,7 @@ int main_reset(int argc, char** argv, int& index, const char* desc)
         if (auto iCw = category.GetIndexCwByName("tmf")) {
             auto& nodes_ss = category.GetRings()[iCw.index].nodes_ss;
             if (auto deg = AdamsDeg(16, 96 + 16); nodes_ss.front().has(deg)) {
+                Logger::LogDiff(0, EnumReason::manual, "tmf", deg, 3, {0}, {0}, "", flag);
                 if (auto rt = category.SetCwDiffGlobal(iCw, deg, int1d{0}, int1d{0}, 3, false, flag))
                     return -325;
             }

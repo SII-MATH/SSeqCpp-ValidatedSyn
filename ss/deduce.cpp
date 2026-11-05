@@ -256,7 +256,10 @@ SSRet Category::DeduceDiffBySynthetic(SSFlag flag)
             if (depth_ > 0 && nodes_ss.back().empty())
                 continue;
             for (AdamsDeg deg : GetSSDegs(iCw)) {
-                const auto& sc = nodes_ss.GetRecentSc(deg);
+                // A conclusion can rewrite this very degree (including its
+                // basis and diff vectors). Never iterate live staircase rows
+                // across a mutating rule call, or pass aliases into that call.
+                const auto sc = nodes_ss.GetRecentSc(deg);
                 for (size_t i = 0; i < sc.levels.size(); ++i) {
                     if (sc.levels[i] > LEVEL_PERM && sc.diffs[i] != NULL_DIFF) {
                         const int r = LEVEL_MAX - sc.levels[i];

@@ -17,7 +17,10 @@ int main_verify_validated(int argc, char** argv, int& index, const char* desc)
     // Loading saved output is allowed only in this separate verification command.
     // No conclusion is injected. Negative trials are rolled back by TryDiff.
     SSFlag flags = SSFlag::cofseq | SSFlag::synthetic | SSFlag::log_proof |
-                   SSFlag::deduce_zero | SSFlag::deduce_pullback;
+                   SSFlag::deduce_zero | SSFlag::deduce_pullback |
+                   SSFlag::no_exclusions | SSFlag::no_save;
+    // Verification may search for a contradiction, but its target-directed
+    // trials must never seed exclusions consumed by a later deduction round.
     Category cat(category, "", flags);
     json passed = json::array(), missing = json::array(), errors = json::array();
     for (const auto& row : targets.at("targets")) {
