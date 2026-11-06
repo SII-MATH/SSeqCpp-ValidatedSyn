@@ -5,6 +5,7 @@ Experimental fork of [WayneLin92/SSeqCpp](https://github.com/WayneLin92/SSeqCpp)
 - [Project scope and evidence boundary](docs/validated-syn/README.md)
 - [Fixed 201 targets](validation/targets.json)
 - [Cache boundaries and performance findings](docs/validated-syn/performance.md)
+- [Original auto/switch run and periodic target checks](docs/validated-syn/original-auto.md)
 - [Crash fix and ordinary-prefix-first rerun](docs/validated-syn/rerun.md)
 - `SynCs` and `SynCsIn` are disabled; old `GetSynImage` is disabled.
 - The current first implementation covers finite zigzags, selective middle elimination, source finite lifts, and source/target early-d2 corrections. Other sufficient-condition families remain to be implemented if needed. A partial run is never reported as a pass.
@@ -14,20 +15,31 @@ Build and start a fresh run:
 ```sh
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DFMT_TEST=OFF -DBUILD_TESTING=OFF
 cmake --build build --target ss -j 4
-python3 validation/prepare.py /path/to/original-E2-map-seed .runs/cw49
-python3 validation/run.py .runs/cw49 --official-log /path/to/official-proofs.db
+python3 validation/auto_run.py .runs/cw49 \
+  --seed /path/to/original-E2-map-seed --flags syn,dxy \
+  --native-rounds 100 --check-seconds 600 --checkpoint-seconds 300
 ```
 
-The official database is read only by the comparison step. The native engine
-starts from raw inputs with every synthetic rule off; new rules are enabled
-only after the ordinary event stream matches the published prefix.
+The native engine starts from raw inputs and the original reset assumptions.
+It keeps the upstream auto loop and original switches. With `syn,dxy`, the
+existing automatic Syn trigger uses the new rules and the original optional
+uncertain-differential Leibniz search is enabled. Every ten minutes an
+independent checker reports target completion and actual committed log rows
+from a private copy of the native recovery state. The native no-change test
+can stop auto before its configured round limit.
+
+The earlier `validation/run.py` experiment separately reproduces the official
+ordinary prefix before enabling new rules; its official database is read
+only by the comparison process. That experiment and its successful 201/201
+result remain preserved in the rerun guide.
 
 The native `auto` and `synthetic` commands now publish committed log counts
 every 30 seconds and save a recovery checkpoint every five minutes and at
 iteration boundaries. Saving waits for the next outer degree boundary;
 unfinished contradiction trials are never saved. After an interruption, use
-the same runner invocation with `--resume`. The runner rechecks the ordinary
-prefix before continuing new rules. Details are in the [rerun guide](docs/validated-syn/rerun.md).
+the same runner invocation with `--resume`. The original-auto controller
+restores its own native checkpoint; the earlier staged controller also
+rechecks its ordinary prefix. Details are in the two run guides above.
 
 The data preparation command rejects computed SS states and imports neither historical logs nor computed cofiber tables. The original Adams E2/d2/map data, constructor factors and the three original manual reset inputs are retained initial assumptions. `status.json` reports progress; `acceptance.json` reports actual per-target results. The eight negative targets require fresh contradiction trials. Passing the program does not discharge the formal model and comparison obligations.
 

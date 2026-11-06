@@ -1,0 +1,94 @@
+"""Recovery and switch boundaries for the original native auto controller."""
+import argparse
+import hashlib
+import json
+from pathlib import Path
+import sqlite3
+import sys
+import tempfile
+import time
+import unittest
+from unittest.mock import patch
+
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
+import auto_run
+
+
+class AutoControllerTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp=tempfile.TemporaryDirectory();self.addCleanup(self.tmp.cleanup)
+        self.base=Path(self.tmp.name);self.directory=self.base/'run';self.directory.mkdir()
+        self.binary=self.base/'engine.py'
+        self.binary.write_text('''#!/usr/bin/env python3
+import sys,json,sqlite3
+from pathlib import Path
+a=sys.argv[1:];p=Path(a[1] if a[0]=='reset' else a[2] if a[0]=='deduce' else a[1])
+with (p/'commands').open('a') as f:f.write(json.dumps(a)+'\\n')
+with sqlite3.connect(p/'log.db') as d:
+ if a[0]=='reset':
+  d.execute('DROP TABLE IF EXISTS log');d.execute('CREATE TABLE log(id INTEGER PRIMARY KEY,reason TEXT)')
+  d.execute('CREATE TABLE IF NOT EXISTS exclusions(id INTEGER PRIMARY KEY)');d.execute("INSERT INTO log VALUES(1,'d2')")
+ elif a[0]=='deduce':
+  (p/'start-rows').write_text(str(d.execute('SELECT count(*) FROM log').fetchone()[0]))
+  with sqlite3.connect(p/'recovery.sqlite3') as c:
+   c.execute('CREATE TABLE IF NOT EXISTS metadata(id INTEGER PRIMARY KEY,value TEXT)')
+   c.execute('INSERT OR REPLACE INTO metadata VALUES(1,?)',(json.dumps({'command':'auto-001','complete':True,'changed':False}),))
+ elif a[0]=='verify':
+  (p/'acceptance.json').write_text(json.dumps({'passed':201,'total':201,'missing':[],'errors':[],'forbidden_outputs':0}))
+''');self.binary.chmod(0o755)
+        self.state=dict(historical_log_imported=False,targets_sha256=auto_run.TARGET_SHA256,
+            binary_sha256=hashlib.sha256(self.binary.read_bytes()).hexdigest(),source_commit='fixture',
+            flags='syn,dxy',native_round_limit=100,command_index=1,runner_pid=None,child_pid=None)
+        self.args=argparse.Namespace(directory=self.directory,seed=self.base,binary=self.binary,
+            flags='syn,dxy',native_rounds=100,check_seconds=600,checkpoint_seconds=300,notify_user='',resume=True)
+
+    def save(self):
+        (self.directory/'status.json').write_text(json.dumps(self.state))
+
+    def log(self):
+        with sqlite3.connect(self.directory/'log.db') as d:
+            d.execute('CREATE TABLE log(id INTEGER PRIMARY KEY,reason TEXT)')
+            d.execute('CREATE TABLE exclusions(id INTEGER PRIMARY KEY)')
+            d.executemany('INSERT INTO log VALUES(?,?)',[(1,'d2'),(2,'D')])
+
+    def metadata(self,complete):
+        with sqlite3.connect(self.directory/'recovery.sqlite3') as d:
+            d.execute('CREATE TABLE metadata(id INTEGER PRIMARY KEY,value TEXT)')
+            d.execute('INSERT INTO metadata VALUES(1,?)',(json.dumps({'command':'auto-001','complete':complete,'changed':False}),))
+
+    def run_controller(self):
+        original=time.sleep
+        with patch.object(auto_run.time,'sleep',lambda _:original(.005)):
+            auto_run.run(self.args)
+        return [json.loads(x) for x in (self.directory/'commands').read_text().splitlines()]
+
+    def test_interrupted_reset_repeats_reset_before_auto(self):
+        self.state.update(phase='initializing',command='initialize');self.save();self.log()
+        commands=self.run_controller()
+        self.assertEqual([x[0] for x in commands],['reset','deduce','verify'])
+        self.assertEqual((self.directory/'start-rows').read_text(),'1')
+
+    def test_unpublished_first_checkpoint_discards_later_log_tail(self):
+        self.state.update(phase='deducing',command='auto-001',last_completed_command='initialize',command_log_start=1)
+        self.save();self.log()
+        sqlite3.connect(self.directory/'recovery.sqlite3').close()
+        commands=self.run_controller()
+        self.assertNotIn('checkpoint_resume=1',commands[0])
+        self.assertEqual((self.directory/'start-rows').read_text(),'1')
+
+    def test_switch_change_requires_complete_native_boundary(self):
+        self.state.update(phase='deducing',command='auto-001');self.save();self.metadata(False)
+        self.args.flags='syn,dxy,zero'
+        with self.assertRaisesRegex(RuntimeError,'completed native boundary'):self.run_controller()
+        self.assertFalse((self.directory/'commands').exists())
+
+    def test_completed_switch_change_starts_new_command(self):
+        self.state.update(phase='fixed-point-incomplete',command='auto-001',last_completed_command='auto-001')
+        self.save();self.log();self.metadata(True);self.args.flags='syn,dxy,zero'
+        commands=self.run_controller()
+        self.assertIn('flags=syn,dxy,zero',commands[0]);self.assertNotIn('checkpoint_resume=1',commands[0])
+        result=json.loads((self.directory/'status.json').read_text())
+        self.assertEqual(result['command_index'],2);self.assertEqual(result['preceding_command'],'auto-001')
+
+
+if __name__=='__main__':unittest.main()
