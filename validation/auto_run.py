@@ -93,7 +93,8 @@ def notify(directory, user_id, state):
         return
     result = json.loads((directory/'acceptance.json').read_text())
     assert result['passed'] == result['total'] == 201 and not result['errors'] and not result['forbidden_outputs']
-    message = ('原版 auto＋开关机制重跑已通过：201/201。\n'
+    workflow = '原版显式 synthetic 扫描接续 auto' if state.get('synthetic_before_auto') else '原版 auto＋开关机制'
+    message = (f'{workflow}重跑已通过：201/201。\n'
                f'实际日志 {state["saved_log_rows"]:,} 条；旧 Syn/SynCs/SynCsIn 输出为 0。\n'
                f'开关：{state["flags"]}。使用本次新生成的数据及检查点。\n'
                f'运行：{directory.name}\n'
@@ -112,6 +113,8 @@ def notify(directory, user_id, state):
 def run(args):
     if args.adopt_binary and not args.resume:
         raise RuntimeError('--adopt-binary requires --resume at a completed native boundary')
+    if args.synthetic_before_auto and not args.resume:
+        raise RuntimeError('--synthetic-before-auto requires --resume at a completed native boundary')
     directory = args.directory.resolve()
     targets = ROOT/'validation/targets.json'
     assert hashlib.sha256(targets.read_bytes()).hexdigest() == TARGET_SHA256
@@ -147,19 +150,40 @@ def run_locked(args, lock_fd):
                     raise RuntimeError('Existing controller or native calculation is still live')
         binary_sha256 = hashlib.sha256(binary.read_bytes()).hexdigest()
         changed_binary = state['binary_sha256'] != binary_sha256
+        intent = state.get('synthetic_before_auto')
+        if intent and intent['stage'] not in ('synthetic', 'auto', 'done'):
+            raise RuntimeError('Invalid explicit synthetic continuation stage')
+        active_intent = intent and intent['stage'] != 'done'
+        new_intent = args.synthetic_before_auto and not intent
+        if (active_intent or new_intent) and args.checkpoint_seconds <= 0:
+            raise RuntimeError('Explicit synthetic continuation requires positive checkpoint seconds')
+        changed_options = state['flags'] != args.flags or state['native_round_limit'] != args.native_rounds
+        if active_intent and (changed_binary or changed_options):
+            raise RuntimeError('Executable and search switches cannot change during explicit synthetic continuation')
+        if active_intent and intent['index'] != state['command_index']:
+            raise RuntimeError('Explicit synthetic continuation command index mismatch')
         if changed_binary and not args.adopt_binary:
             raise RuntimeError('The pinned executable differs; use --adopt-binary at a completed native boundary')
-        changed_options = state['flags'] != args.flags or state['native_round_limit'] != args.native_rounds
-        if changed_binary or changed_options or state['phase'] == 'round-limit-incomplete':
+        if not active_intent and (new_intent or changed_binary or changed_options or state['phase'] == 'round-limit-incomplete'):
             metadata = recovery_metadata(directory)
             if not metadata or not metadata['complete']:
                 raise RuntimeError('Executable and search switches may change only at a completed native boundary')
+            if new_intent and (state.get('last_completed_command') != metadata['command'] or
+                               state.get('command') != metadata['command'] or state.get('exit_code') != 0 or
+                               state.get('phase') == 'failed'):
+                raise RuntimeError('Explicit synthetic continuation requires a successfully exited native command')
             if changed_binary:
                 source_commit = subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
                 state.update(previous_binary={key:state[key] for key in ('binary_sha256','source_commit')},
                              binary_sha256=binary_sha256, source_commit=source_commit)
             state.update(preceding_command=metadata['command'], command_index=state['command_index']+1,
                          flags=args.flags, native_round_limit=args.native_rounds, phase='deducing')
+            if new_intent:
+                state.update(synthetic_before_auto=dict(index=state['command_index'], stage='synthetic',
+                             preceding_command=metadata['command']),
+                             schedule='explicit native synthetic then auto with original switches',
+                             controller_source_commit=subprocess.check_output(
+                                 ['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip())
     state['runner_pid'] = os.getpid()
     status = directory/'status.json'
     def save(**values):
@@ -223,48 +247,91 @@ def run_locked(args, lock_fd):
             (directory/(name+'.error.log')).write_text('\n'.join(tail)+'\n')
             save(phase='failed')
             raise RuntimeError(f'Native command {name} exited {process.returncode}')
-        save(last_completed_command=name, saved_log_rows=log_counts(directory)[0])
+        rows, forbidden = log_counts(directory)
+        if forbidden:
+            save(phase='failed', monitor_warning='Forbidden producer output detected')
+            raise RuntimeError(f'Native command {name} produced forbidden output')
+        save(last_completed_command=name, saved_log_rows=rows)
+
+    def checkpointed(arguments, name, predecessor=None):
+        """Restore this command or its completed predecessor before starting."""
+        m = recovery_metadata(directory)
+        if m:
+            if m['command'] == name:
+                if m['kind'] != arguments[1]:
+                    raise RuntimeError('Recovery checkpoint kind does not match the requested command')
+                arguments = [*arguments, 'checkpoint_resume=1']
+            elif not m['complete']:
+                raise RuntimeError('Unfinished checkpoint belongs to another native command')
+            elif predecessor is not None and m['command'] != predecessor:
+                raise RuntimeError('Completed checkpoint is not the expected preceding command')
+            elif args.resume:
+                # A complete checkpoint precedes SaveNodes. Always restore it
+                # to finish saving and discard a later log tail, even if a
+                # previous interrupted restoration changed status.command.
+                previous = m['options']
+                restore = ['deduce',m['kind'],str(directory),
+                           'checkpoint_seconds='+str(args.checkpoint_seconds),'checkpoint_resume=1']
+                if m['kind'] == 'auto':
+                    restore += [f'{key}={previous[key]}' for key in ('stem_min','stem_max','T','id_thread','num')]
+                    if previous.get('flag_names'):
+                        restore += ['flags='+','.join(previous['flag_names'])]
+                    for key in ('mode','deduce_list'):
+                        if previous.get(key):
+                            restore += [key+'='+','.join(previous[key])]
+                native(restore, m['command'], False)
+        elif args.resume and state.get('command') == name and state.get('command_log_start') is not None:
+            # No first checkpoint was published; the saved tables are still
+            # authoritative. Discard this command's later committed log tail.
+            with sqlite3.connect(directory/'log.db') as db:
+                db.execute('DELETE FROM exclusions WHERE id>?', (state['command_log_start'],))
+                db.execute('DELETE FROM log WHERE id>?', (state['command_log_start'],))
+        native(arguments, name, True)
 
     if not args.resume or (state.get('command') == 'initialize' and state.get('last_completed_command') != 'initialize'):
         native(['reset',str(directory),'confirm=1'], 'initialize', False)
     elif state.get('phase') == 'passed':
         notify(directory,args.notify_user,state);return
-    save(phase='deducing')
+    intent = state.get('synthetic_before_auto')
+    verify_only = bool(intent and intent['stage'] == 'done' and state['phase'] == 'verifying')
+    if not verify_only:
+        save(phase='deducing')
     index = state['command_index']
+    if intent and intent['stage'] == 'synthetic':
+        synthetic_name = f'synthetic-{index:03d}'
+        m = recovery_metadata(directory)
+        already_exited = state.get('last_completed_command') == synthetic_name and state.get('exit_code') == 0
+        if already_exited:
+            if not m or m['command'] != synthetic_name or not m['complete']:
+                raise RuntimeError('Successful synthetic exit has no matching completed checkpoint')
+        else:
+            checkpointed(['deduce','synthetic',str(directory),
+                          'checkpoint_seconds='+str(args.checkpoint_seconds)],
+                         synthetic_name, intent['preceding_command'])
+            m = recovery_metadata(directory)
+            if not m or m['command'] != synthetic_name or not m['complete']:
+                raise RuntimeError('Synthetic command exited without a matching completed checkpoint')
+        # The independent intent survives predecessor restoration and the gap
+        # between successful process exit and this atomic stage advancement.
+        intent = dict(intent, stage='auto')
+        save(synthetic_before_auto=intent)
     name = f'auto-{index:03d}'
     options = ['deduce','auto',str(directory),'stem_min=0','stem_max=261',
                'num='+str(args.native_rounds),'flags='+args.flags,
                'checkpoint_seconds='+str(args.checkpoint_seconds)]
     recovery = directory/'recovery.sqlite3'
-    m = recovery_metadata(directory)
-    if m:
-        if m['command'] == name:
-            options.append('checkpoint_resume=1')
-        elif not m['complete']:
-            raise RuntimeError('Unfinished checkpoint belongs to another native command')
-        elif args.resume:
-            # A killed first publication can leave the preceding complete
-            # checkpoint. Always restore it: even the preceding restoration
-            # may have been interrupted after updating status.command.
-            previous = m['options']
-            restore = ['deduce',m['kind'],str(directory),
-                       'checkpoint_seconds='+str(args.checkpoint_seconds),'checkpoint_resume=1']
-            if m['kind'] == 'auto':
-                restore += [f'{key}={previous[key]}' for key in ('stem_min','stem_max','T','id_thread','num')]
-                if previous.get('flag_names'):
-                    restore += ['flags='+','.join(previous['flag_names'])]
-                for key in ('mode','deduce_list'):
-                    if previous.get(key):
-                        restore += [key+'='+','.join(previous[key])]
-            native(restore, m['command'], False)
-    elif args.resume and state.get('command') == name and state.get('command_log_start') is not None:
-        # No first checkpoint was published; the last completed saved state
-        # is authoritative. Never combine it with a later committed log tail.
-        with sqlite3.connect(directory/'log.db') as db:
-            db.execute('DELETE FROM exclusions WHERE id>?', (state['command_log_start'],))
-            db.execute('DELETE FROM log WHERE id>?', (state['command_log_start'],))
-    native(options, name, True)
-    save(phase='verifying')
+    predecessor = f'synthetic-{index:03d}' if intent and intent['stage'] == 'auto' else None
+    if not verify_only:
+        checkpointed(options, name, predecessor)
+    if intent and intent['stage'] in ('auto', 'done'):
+        m = recovery_metadata(directory)
+        if (not m or m['command'] != name or not m['complete'] or
+                state.get('last_completed_command') != name or state.get('exit_code') != 0):
+            raise RuntimeError('Explicit synthetic continuation requires a successfully exited completed auto checkpoint')
+    if intent and intent['stage'] == 'auto':
+        save(phase='verifying', synthetic_before_auto=dict(intent, stage='done'))
+    else:
+        save(phase='verifying')
     check_binary()
     with (directory/'final-verification.log').open('w') as output:
         checked = subprocess.run([str(binary),'verify',str(directory),str(targets)],cwd=directory,
@@ -297,4 +364,6 @@ if __name__ == '__main__':
     parser.add_argument('--resume',action='store_true')
     parser.add_argument('--adopt-binary',action='store_true',
                         help='Adopt a changed executable only when resuming a completed native checkpoint')
+    parser.add_argument('--synthetic-before-auto',action='store_true',
+                        help='Once per run, resume a successful native boundary with explicit synthetic then auto')
     run(parser.parse_args())

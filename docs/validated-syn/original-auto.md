@@ -10,9 +10,9 @@ correspond to proved conditional declarations in
 `KIP126/ProofTools/SyntheticCoverage`; the C++/fixed-model realization is
 not itself a Lean certificate.
 
-Unlike the earlier prefix-comparison experiment, this run enables
+Unlike the earlier prefix-comparison experiment, the initial run enables
 `flags=syn,dxy` from the start of the native auto command, after the
-unchanged reset. It has no row-count threshold and does not schedule a
+unchanged reset. The default controller has no row-count threshold and does not schedule a
 separate synthetic sweep between auto iterations. `dxy` is the original
 optional uncertain-differential Leibniz search. No rule reads the target
 file or historical computation output. The same 201 fixed targets are used
@@ -46,6 +46,56 @@ and source commit, pins the new executable, and starts a new native command
 after restoring the preceding saved state and log boundary. This does not
 import a historical computation or change the fixed acceptance targets.
 
+The completed auto-only phases of `.runs/cw49-native-auto-20261106` were:
+
+| Command | Original switches | Rounds to fixed point | Checked targets | Native log boundary | Binary prefix / C++ source |
+| --- | --- | ---: | ---: | ---: | --- |
+| `auto-001` | `syn,dxy` | 8 | 197/201 | 2,481,321 | `04c7…` / `d77d420` |
+| `auto-002` | `syn,dxy,zero` | 6 | 200/201 | 2,521,033 | `3236…` / `2bc93b0` |
+
+The second command used the executable-adoption controller at `f27e542`.
+Its final physical log contained 2,521,043 rows: ten additional acceptance
+trial rows were beyond the native checkpoint boundary. T010 remained
+missing; errors and forbidden outputs were zero. These auto-only phases
+did not reach 201/201. A separate read-only rescan of already-known inputs
+returned 622 distinct new program candidates on checkpoint 17, round 4,
+log boundary 2,521,011. Those diagnostic candidates were not inserted into
+the run; this count does not describe the final checkpoint 32.
+
+An explicit, one-time continuation may call the upstream standalone
+`deduce synthetic` command before the next `deduce auto` command:
+
+```sh
+python validation/auto_run.py EXISTING_RUN_DIRECTORY \
+  --seed ORIGINAL_E2_MAP_SEED --binary SAME_FIXED_BINARY \
+  --resume --synthetic-before-auto --flags syn,dxy,zero \
+  --native-rounds 100 --check-seconds 600 --checkpoint-seconds 300
+```
+
+This option requires a complete checkpoint whose native command has
+successfully exited, with no live controller or child. It records one stable
+intent in `status.json`, for example `synthetic-003` followed by `auto-003`,
+and restores the preceding state and log boundary. The standalone command
+uses its original fixed flags and internally repeats its all-object scan
+until no change remains. SynCs and SynCsIn remain disabled. Its successful
+save and process exit are required before auto starts with the requested
+original switches. This schedule does not enable `pullback`, alter the auto
+loop or finite rules, or add mathematical inputs.
+
+Resume an interrupted continuation with the same pinned executable,
+switches and round limit. The intent survives independently of the
+diagnostic `command` field, which predecessor restoration can overwrite.
+Partial checkpoints resume their own command. A complete checkpoint
+published before ordinary tables finished saving is resumed to finish
+saving. After synthetic has successfully exited, auto startup may repeat
+that complete-checkpoint save without rerunning the scan. After auto exits,
+verification and notification retries do not repeat synthetic. Repeating
+the option is an idempotent retry of the same one-time request; it does not
+request a second scan. A positive checkpoint interval is required, and
+binary or search-option changes are rejected while the continuation is
+active. The existing C++ binary hash/source pin is preserved; the controller
+revision is recorded separately as `controller_source_commit`.
+
 The controller preserves the mathematical SQLite log and the native
 recovery state. It drains terminal output without keeping a redundant full
 transcript. The first available checkpoint is checked after about 30
@@ -76,6 +126,8 @@ monitoring, not parallel inference.
 the successful receipt in `notification.json`. A notification failure
 leaves the mathematical result intact and can be retried with `--resume`.
 No message is sent for an incomplete target collection.
+When an explicit synthetic continuation was used, the successful
+notification names that schedule rather than describing an auto-only run.
 
 The native monitor regression deliberately removes all saved S0 staircase
 rows after a checkpoint was published. It verifies 201 distinct fixture

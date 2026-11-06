@@ -28,6 +28,12 @@ independent checker reports target completion and actual committed log rows
 from a private copy of the native recovery state. The native no-change test
 can stop auto before its configured round limit.
 
+The observed native auto-only phases stopped at 197/201 with `syn,dxy`,
+then 200/201 with `syn,dxy,zero`; T010 remained missing. The original
+standalone `deduce synthetic` command can recheck already-known inputs
+that the inline auto trigger does not revisit. The run guide distinguishes
+this explicit scan from auto and records the actual continuation used.
+
 The earlier `validation/run.py` experiment separately reproduces the official
 ordinary prefix before enabling new rules; its official database is read
 only by the comparison process. That experiment and its successful 201/201
