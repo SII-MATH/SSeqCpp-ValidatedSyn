@@ -26,7 +26,12 @@ int main_verify_validated(int argc, char** argv, int& index, const char* desc)
     // Its own log and rolled-back trials never touch the running calculation.
     Category cat(category, "", flags, true, false, checkpoint);
     json passed = json::array(), missing = json::array(), errors = json::array();
+    bool invalid_trial_state = false;
     for (const auto& row : targets.at("targets")) {
+        if (invalid_trial_state) {
+            missing.push_back(row.at("id"));
+            continue;
+        }
         bool okay = false;
         try {
             auto object = cat.GetIndexCwByName(row.at("object"));
@@ -49,6 +54,9 @@ int main_verify_validated(int argc, char** argv, int& index, const char* desc)
             else throw RunTimeError("Unsupported target kind");
         } catch (const std::exception& e) {
             errors.push_back({{"id",row.at("id")},{"message",e.what()}});
+            // An exception inside upstream TryDiff can bypass PopNode.
+            // Never evaluate another target using that possibly active trial.
+            invalid_trial_state = true;
         }
         (okay ? passed : missing).push_back(row.at("id"));
     }

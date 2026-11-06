@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Original native auto/switch scheduling, with isolated checkpoint monitoring."""
 import argparse
+import fcntl
 from collections import deque
 from datetime import datetime, timezone, timedelta
 import hashlib
@@ -45,7 +46,7 @@ def recovery_metadata(directory):
         return json.loads(db.execute('SELECT value FROM metadata WHERE id=1').fetchone()[0])
 
 
-def snapshot_check(directory, binary, targets):
+def snapshot_check(directory, binary, targets, *, lock_fd=None):
     """Copy this run's atomic recovery state; never share its writable log."""
     with tempfile.TemporaryDirectory(prefix='ss-auto-verification-') as temporary:
         private = Path(temporary)
@@ -63,7 +64,8 @@ def snapshot_check(directory, binary, targets):
             origin.backup(copy)
             metadata = json.loads(copy.execute('SELECT value FROM metadata WHERE id=1').fetchone()[0])
         checked = subprocess.run([str(binary), 'verify', str(private), str(targets), 'checkpoint=1'],
-                                 cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+                                 cwd=private, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+                                 pass_fds=() if lock_fd is None else (lock_fd,))
         if not (private/'acceptance.json').is_file():
             raise RuntimeError('Checkpoint verification failed: '+checked.stdout[-3000:])
         result = json.loads((private/'acceptance.json').read_text())
@@ -108,12 +110,25 @@ def notify(directory, user_id, state):
 
 
 def run(args):
+    directory = args.directory.resolve()
+    targets = ROOT/'validation/targets.json'
+    assert hashlib.sha256(targets.read_bytes()).hexdigest() == TARGET_SHA256
+    if not args.resume:
+        prepare(args.seed, directory)
+    with (directory/'.controller.lock').open('a') as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            raise RuntimeError('This run is locked by a controller or its native child') from None
+        return run_locked(args, lock.fileno())
+
+
+def run_locked(args, lock_fd):
     resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
     directory, binary = args.directory.resolve(), args.binary.resolve()
     targets = ROOT/'validation/targets.json'
     assert hashlib.sha256(targets.read_bytes()).hexdigest() == TARGET_SHA256
     if not args.resume:
-        prepare(args.seed, directory)
         state = dict(phase='initializing', started=time.time(), historical_log_imported=False,
                      target_count=201, targets_sha256=TARGET_SHA256, schedule='native auto with original switches',
                      binary_sha256=hashlib.sha256(binary.read_bytes()).hexdigest(),
@@ -140,9 +155,13 @@ def run(args):
     status = directory/'status.json'
     def save(**values):
         state.update(values);atomic_json(status, state)
+    def check_binary():
+        if hashlib.sha256(binary.read_bytes()).hexdigest() != state['binary_sha256']:
+            raise RuntimeError('The pinned executable changed during this run')
     save()
 
     def native(arguments, name, monitor):
+        check_binary()
         tail = deque(maxlen=80); metrics = {}; lock = threading.Lock()
         log_start = None
         if (directory/'log.db').exists():
@@ -151,7 +170,8 @@ def run(args):
         process = subprocess.Popen([str(binary), *arguments], cwd=ROOT, stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT, text=True, errors='replace',
                                    env=os.environ|{'SS_VALIDATED_CACHE_STATS':'1','SS_RUN_COMMAND':name,
-                                       'SS_BINARY_SHA256':state['binary_sha256'],'SS_SOURCE_COMMIT':state['source_commit']})
+                                       'SS_BINARY_SHA256':state['binary_sha256'],'SS_SOURCE_COMMIT':state['source_commit']},
+                                   pass_fds=(lock_fd,))
         save(command=name, child_pid=process.pid, command_started=time.time(), command_log_start=log_start)
         def reader():
             for line in process.stdout:
@@ -173,7 +193,8 @@ def run(args):
             save(**values)
             if monitor and time.monotonic() >= next_check and (directory/'recovery.sqlite3').exists():
                 try:
-                    result = snapshot_check(directory, binary, targets)
+                    check_binary()
+                    result = snapshot_check(directory, binary, targets, lock_fd=lock_fd)
                     publish_progress(directory, result)
                     save(passed=result['passed'], missing=result['missing'], last_checked=result['checked_at'], monitor_warning=None)
                     if result['forbidden_outputs']:
@@ -212,6 +233,21 @@ def run(args):
             options.append('checkpoint_resume=1')
         elif not m['complete']:
             raise RuntimeError('Unfinished checkpoint belongs to another native command')
+        elif args.resume:
+            # A killed first publication can leave the preceding complete
+            # checkpoint. Always restore it: even the preceding restoration
+            # may have been interrupted after updating status.command.
+            previous = m['options']
+            restore = ['deduce',m['kind'],str(directory),
+                       'checkpoint_seconds='+str(args.checkpoint_seconds),'checkpoint_resume=1']
+            if m['kind'] == 'auto':
+                restore += [f'{key}={previous[key]}' for key in ('stem_min','stem_max','T','id_thread','num')]
+                if previous.get('flag_names'):
+                    restore += ['flags='+','.join(previous['flag_names'])]
+                for key in ('mode','deduce_list'):
+                    if previous.get(key):
+                        restore += [key+'='+','.join(previous[key])]
+            native(restore, m['command'], False)
     elif args.resume and state.get('command') == name and state.get('command_log_start') is not None:
         # No first checkpoint was published; the last completed saved state
         # is authoritative. Never combine it with a later committed log tail.
@@ -220,8 +256,10 @@ def run(args):
             db.execute('DELETE FROM log WHERE id>?', (state['command_log_start'],))
     native(options, name, True)
     save(phase='verifying')
+    check_binary()
     with (directory/'final-verification.log').open('w') as output:
-        checked = subprocess.run([str(binary),'verify',str(directory),str(targets)],cwd=ROOT,stdout=output,stderr=subprocess.STDOUT)
+        checked = subprocess.run([str(binary),'verify',str(directory),str(targets)],cwd=directory,
+                                 stdout=output,stderr=subprocess.STDOUT,pass_fds=(lock_fd,))
     result = json.loads((directory/'acceptance.json').read_text())
     result.update(log_rows=log_counts(directory)[0], checked_at=time.time())
     publish_progress(directory,result)

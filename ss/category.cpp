@@ -485,6 +485,7 @@ SSRet Category::SetCwDiffSynthetic(IndexUniv iCw, AdamsDeg deg_x, const int1d& x
                                   conclusion.y, conclusion.page, true, flag);
         result += rt;
         if (rt) return result;
+        result += SSRet::CHANGE();
     }
     return result;
 }

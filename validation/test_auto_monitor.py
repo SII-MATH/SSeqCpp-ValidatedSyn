@@ -35,11 +35,17 @@ def main(seed):
             before=db.execute('SELECT count(*),max(id) FROM log').fetchone()
         result=snapshot_check(run,binary,target_file)
         assert result['passed']==201 and not result['errors'] and not result['forbidden_outputs'],result
+        # A failed target evaluation must not continue into subsequent targets:
+        # upstream trial exceptions are not guaranteed to pop their trial node.
+        invalid=json.loads(json.dumps(targets));invalid['targets'][0]['kind']='invalid-test-kind'
+        target_file.write_text(json.dumps(invalid))
+        aborted=snapshot_check(run,binary,target_file)
+        assert aborted['passed']==0 and len(aborted['errors'])==1 and len(aborted['missing'])==201,aborted
         with sqlite3.connect(run/'log.db') as db:
             assert before==db.execute('SELECT count(*),max(id) FROM log').fetchone(),'monitor wrote production log'
         with sqlite3.connect(run/s0['path']) as db:
             assert db.execute('SELECT count(*) FROM S0_AdamsE2_ss').fetchone()[0]==0,'monitor wrote saved SS state'
-        print('PASS: checkpoint state used instead of stale saved tables; 201 distinct fixture equations; producer log and state unchanged')
+        print('PASS: checkpoint state used instead of stale saved tables; 201 distinct fixture equations; abort after target exception; producer log and state unchanged')
 
 
 if __name__=='__main__':

@@ -6,6 +6,45 @@
 static void require(bool b, const char* message) {
     if (!b) throw std::runtime_error(message);
 }
+
+static void test_synthetic_boundary_change(Category& cat) {
+    using namespace validated_syn;
+    const auto sphere=cat.GetIndexCwByName("S0"),moore=cat.GetIndexCwByName("C2");
+    const auto source=AdamsDeg(5,23),top=AdamsDeg(4,22),target=AdamsDeg(9,26);
+    const auto flags=SSFlag::no_save;
+    require(State{cat}.dimension(sphere,top)==2 && State{cat}.dimension(sphere,source)==1 &&
+            State{cat}.dimension(sphere,target)==1 && State{cat}.dimension(moore,target)==1 &&
+            State{cat}.dimension(moore,AdamsDeg(7,25))==1 &&
+            State{cat}.dimension(moore,AdamsDeg(6,24))==0,
+            "fixed actual E2 spaces for the finite boundary rule");
+    // Use the actual bases and triangle maps, with one known d2-zero top
+    // lift and an available unknown d2 source for the new boundary. The d4
+    // equation is supplied as a local premise, not asserted by a fresh search.
+    cat.AddNode(flags);
+    cat.GetNodesSS(sphere).back()[top]=Staircase{{{0},{1}}, {NULL_DIFF,NULL_DIFF}, {9997,9998}};
+    cat.GetNodesSS(moore).back()[AdamsDeg(7,25)]=Staircase{{{0}}, {NULL_DIFF}, {9998}};
+    cat.GetNodesSS(moore).back()[target]=Staircase{{{0}}, {NULL_DIFF}, {9998}};
+    auto candidates=finite_zigzags(cat,sphere,source,{0},{0},4);
+    require(candidates.size()==1 && candidates[0].object==moore &&
+            candidates[0].source==AdamsDeg(6,24) && candidates[0].page==3 &&
+            candidates[0].x.empty() && candidates[0].y==int1d({0}) &&
+            json::parse(candidates[0].witness).at("rule")=="source-finite",
+            "actual finite rule must produce the empty-source module conclusion");
+    require(!contains(State{cat}.boundaries(moore,target,3),{0}),
+            "finite boundary must be new before insertion");
+    auto changed=cat.SetCwDiffSynthetic(sphere,source,{0},{0},4,false,flags);
+    require(!changed && contains(State{cat}.boundaries(moore,target,3),{0}),
+            "finite conclusion must insert the actual earlier boundary");
+    require(changed.IsChanged() && !changed.IsChangedAtX(),
+            "an accepted module boundary must report CHANGE without CHANGE_AT_X");
+    require(finite_zigzags(cat,sphere,source,{0},{0},4).empty(),
+            "the finite boundary rule must reach closure after insertion");
+    auto closed=cat.SetCwDiffSynthetic(sphere,source,{0},{0},4,false,flags);
+    require(!closed && !closed.IsChanged() && GetLevel(cat.GetNodesSS(moore),target,{0})==2,
+            "a repeated closed rule must retain the boundary without reporting change");
+    cat.PopNode(flags);
+}
+
 int main(int argc, char** argv) {
     using namespace validated_syn;
     require(argc == 2, "fixture directory required");
@@ -128,5 +167,6 @@ int main(int argc, char** argv) {
     require(disabled, "legacy getter must fail closed");
     auto no_cofiber_syn = cat.DeduceDiffBySyntheticCofseq(SSFlag::synthetic);
     require(!no_cofiber_syn && !no_cofiber_syn.IsChanged(), "cofiber synthetic producers disabled");
-    std::cout << "PASS: full kernel, affine relation, strict boundaries, unknown/range handling, legacy and cofiber barriers\n";
+    test_synthetic_boundary_change(cat);
+    std::cout << "PASS: full kernel, affine relation, strict boundaries, unknown/range handling, legacy and cofiber barriers, finite boundary mutation/change/closure\n";
 }

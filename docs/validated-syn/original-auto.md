@@ -18,6 +18,13 @@ optional uncertain-differential Leibniz search. No rule reads the target
 file or historical computation output. The same 201 fixed targets are used
 only by the independent checker.
 
+Upstream auto reads `syn` before its loop; it never enables that switch
+after ordinary deductions stop. Once enabled, the existing inline trigger
+requires depth at most one, an input page at most six, and nonempty source
+and known nonempty target. A late first `Syn` log records the first emitted
+conclusion, not the time the switch was enabled. The old log alone does not
+recover its original launch options.
+
 `num=100` is an upper bound for the upstream native loop. Its existing
 no-change test may stop it earlier; the final status records whether it
 actually reached that fixed point. A fixed point that misses targets is
