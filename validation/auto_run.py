@@ -35,6 +35,16 @@ def log_counts(directory, floor=None):
     return rows, forbidden
 
 
+def recovery_metadata(directory):
+    path = directory/'recovery.sqlite3'
+    if not path.exists():
+        return None
+    with sqlite3.connect(path) as db:
+        if not db.execute("SELECT count(*) FROM sqlite_master WHERE type='table' AND name='metadata'").fetchone()[0]:
+            return None
+        return json.loads(db.execute('SELECT value FROM metadata WHERE id=1').fetchone()[0])
+
+
 def snapshot_check(directory, binary, targets):
     """Copy this run's atomic recovery state; never share its writable log."""
     with tempfile.TemporaryDirectory(prefix='ss-auto-verification-') as temporary:
@@ -113,13 +123,19 @@ def run(args):
     else:
         state = json.loads((directory/'status.json').read_text())
         assert state['historical_log_imported'] is False and state['targets_sha256'] == TARGET_SHA256
-        assert state['flags'] == args.flags and state['native_round_limit'] == args.native_rounds
         assert state['binary_sha256'] == hashlib.sha256(binary.read_bytes()).hexdigest()
         for key in ('runner_pid', 'child_pid'):
             pid = state.get(key)
             if pid and Path(f'/proc/{pid}/cmdline').exists():
                 if str(directory).encode() in Path(f'/proc/{pid}/cmdline').read_bytes().split(b'\0'):
                     raise RuntimeError('Existing controller or native calculation is still live')
+        changed_options = state['flags'] != args.flags or state['native_round_limit'] != args.native_rounds
+        if changed_options or state['phase'] == 'round-limit-incomplete':
+            metadata = recovery_metadata(directory)
+            if not metadata or not metadata['complete']:
+                raise RuntimeError('Search switches may change only at a completed native boundary')
+            state.update(preceding_command=metadata['command'], command_index=state['command_index']+1,
+                         flags=args.flags, native_round_limit=args.native_rounds, phase='deducing')
     state['runner_pid'] = os.getpid()
     status = directory/'status.json'
     def save(**values):
@@ -128,11 +144,15 @@ def run(args):
 
     def native(arguments, name, monitor):
         tail = deque(maxlen=80); metrics = {}; lock = threading.Lock()
+        log_start = None
+        if (directory/'log.db').exists():
+            with sqlite3.connect(directory/'log.db') as db:
+                log_start = db.execute('SELECT max(id) FROM log').fetchone()[0]
         process = subprocess.Popen([str(binary), *arguments], cwd=ROOT, stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT, text=True, errors='replace',
                                    env=os.environ|{'SS_VALIDATED_CACHE_STATS':'1','SS_RUN_COMMAND':name,
                                        'SS_BINARY_SHA256':state['binary_sha256'],'SS_SOURCE_COMMIT':state['source_commit']})
-        save(command=name, child_pid=process.pid, command_started=time.time())
+        save(command=name, child_pid=process.pid, command_started=time.time(), command_log_start=log_start)
         def reader():
             for line in process.stdout:
                 clean = re.sub(r'\x1b\[[0-9;]*m','',line).strip()
@@ -155,7 +175,7 @@ def run(args):
                 try:
                     result = snapshot_check(directory, binary, targets)
                     publish_progress(directory, result)
-                    save(passed=result['passed'], missing=result['missing'], last_checked=result['checked_at'])
+                    save(passed=result['passed'], missing=result['missing'], last_checked=result['checked_at'], monitor_warning=None)
                     if result['forbidden_outputs']:
                         save(monitor_warning='Forbidden producer output detected')
                         process.terminate()
@@ -175,7 +195,7 @@ def run(args):
             raise RuntimeError(f'Native command {name} exited {process.returncode}')
         save(last_completed_command=name, saved_log_rows=log_counts(directory)[0])
 
-    if not args.resume:
+    if not args.resume or (state.get('command') == 'initialize' and state.get('last_completed_command') != 'initialize'):
         native(['reset',str(directory),'confirm=1'], 'initialize', False)
     elif state.get('phase') == 'passed':
         notify(directory,args.notify_user,state);return
@@ -186,13 +206,18 @@ def run(args):
                'num='+str(args.native_rounds),'flags='+args.flags,
                'checkpoint_seconds='+str(args.checkpoint_seconds)]
     recovery = directory/'recovery.sqlite3'
-    if recovery.exists():
-        with sqlite3.connect(recovery) as db:
-            m = json.loads(db.execute('SELECT value FROM metadata WHERE id=1').fetchone()[0])
+    m = recovery_metadata(directory)
+    if m:
         if m['command'] == name:
             options.append('checkpoint_resume=1')
         elif not m['complete']:
             raise RuntimeError('Unfinished checkpoint belongs to another native command')
+    elif args.resume and state.get('command') == name and state.get('command_log_start') is not None:
+        # No first checkpoint was published; the last completed saved state
+        # is authoritative. Never combine it with a later committed log tail.
+        with sqlite3.connect(directory/'log.db') as db:
+            db.execute('DELETE FROM exclusions WHERE id>?', (state['command_log_start'],))
+            db.execute('DELETE FROM log WHERE id>?', (state['command_log_start'],))
     native(options, name, True)
     save(phase='verifying')
     with (directory/'final-verification.log').open('w') as output:
