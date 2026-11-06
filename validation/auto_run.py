@@ -110,6 +110,8 @@ def notify(directory, user_id, state):
 
 
 def run(args):
+    if args.adopt_binary and not args.resume:
+        raise RuntimeError('--adopt-binary requires --resume at a completed native boundary')
     directory = args.directory.resolve()
     targets = ROOT/'validation/targets.json'
     assert hashlib.sha256(targets.read_bytes()).hexdigest() == TARGET_SHA256
@@ -138,17 +140,24 @@ def run_locked(args, lock_fd):
     else:
         state = json.loads((directory/'status.json').read_text())
         assert state['historical_log_imported'] is False and state['targets_sha256'] == TARGET_SHA256
-        assert state['binary_sha256'] == hashlib.sha256(binary.read_bytes()).hexdigest()
         for key in ('runner_pid', 'child_pid'):
             pid = state.get(key)
             if pid and Path(f'/proc/{pid}/cmdline').exists():
                 if str(directory).encode() in Path(f'/proc/{pid}/cmdline').read_bytes().split(b'\0'):
                     raise RuntimeError('Existing controller or native calculation is still live')
+        binary_sha256 = hashlib.sha256(binary.read_bytes()).hexdigest()
+        changed_binary = state['binary_sha256'] != binary_sha256
+        if changed_binary and not args.adopt_binary:
+            raise RuntimeError('The pinned executable differs; use --adopt-binary at a completed native boundary')
         changed_options = state['flags'] != args.flags or state['native_round_limit'] != args.native_rounds
-        if changed_options or state['phase'] == 'round-limit-incomplete':
+        if changed_binary or changed_options or state['phase'] == 'round-limit-incomplete':
             metadata = recovery_metadata(directory)
             if not metadata or not metadata['complete']:
-                raise RuntimeError('Search switches may change only at a completed native boundary')
+                raise RuntimeError('Executable and search switches may change only at a completed native boundary')
+            if changed_binary:
+                source_commit = subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
+                state.update(previous_binary={key:state[key] for key in ('binary_sha256','source_commit')},
+                             binary_sha256=binary_sha256, source_commit=source_commit)
             state.update(preceding_command=metadata['command'], command_index=state['command_index']+1,
                          flags=args.flags, native_round_limit=args.native_rounds, phase='deducing')
     state['runner_pid'] = os.getpid()
@@ -286,4 +295,6 @@ if __name__ == '__main__':
     parser.add_argument('--checkpoint-seconds',type=int,default=300)
     parser.add_argument('--notify-user',default='')
     parser.add_argument('--resume',action='store_true')
+    parser.add_argument('--adopt-binary',action='store_true',
+                        help='Adopt a changed executable only when resuming a completed native checkpoint')
     run(parser.parse_args())

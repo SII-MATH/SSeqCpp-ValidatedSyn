@@ -37,6 +37,15 @@ python validation/auto_run.py NEW_RUN_DIRECTORY \
   --check-seconds 600 --checkpoint-seconds 300
 ```
 
+Use `--resume` to continue this run's own saved state. Search switches can
+change only after a native command has completed. To adopt a replacement
+executable at that boundary, also pass `--adopt-binary`; a missing or
+unfinished checkpoint, a live controller/native child, or an unacknowledged
+binary change is rejected. The status retains the previous executable hash
+and source commit, pins the new executable, and starts a new native command
+after restoring the preceding saved state and log boundary. This does not
+import a historical computation or change the fixed acceptance targets.
+
 The controller preserves the mathematical SQLite log and the native
 recovery state. It drains terminal output without keeping a redundant full
 transcript. The first available checkpoint is checked after about 30
