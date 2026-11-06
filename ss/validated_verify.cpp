@@ -5,8 +5,9 @@
 int main_verify_validated(int argc, char** argv, int& index, const char* desc)
 {
     std::string category, target_file;
+    bool checkpoint = false;
     myio::CmdArg1d args = {{"category", &category}, {"targets", &target_file}};
-    myio::CmdArg1d optional;
+    myio::CmdArg1d optional = {{"checkpoint", &checkpoint}};
     if (int error = myio::ParseArguments(argc, argv, index, PROGRAM, desc, VERSION, args, optional)) return error;
     json targets;
     std::ifstream input(target_file);
@@ -21,7 +22,9 @@ int main_verify_validated(int argc, char** argv, int& index, const char* desc)
                    SSFlag::no_exclusions | SSFlag::no_save;
     // Verification may search for a contradiction, but its target-directed
     // trials must never seed exclusions consumed by a later deduction round.
-    Category cat(category, "", flags);
+    // A monitor verifies a private, consistent copy of the recovery database.
+    // Its own log and rolled-back trials never touch the running calculation.
+    Category cat(category, "", flags, true, false, checkpoint);
     json passed = json::array(), missing = json::array(), errors = json::array();
     for (const auto& row : targets.at("targets")) {
         bool okay = false;
